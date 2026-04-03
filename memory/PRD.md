@@ -29,17 +29,20 @@ Build a website called "Coffee Grounds" to document great coffee shops around th
 - Google OAuth for user login, JWT for admin
 
 ## What's Been Implemented (April 2026)
+- **Header**: Clean nav with links (Home, Cafe, About, Contact Us) on left, Sign In on right, no logo text
+- **Landing Page**: Giant "Coffee Grounds" heading, smaller subtitle, featured shops sidebar above the fold, scroll indicator
+- **Footer**: 3-column footer with admin login link, navigation, branding
+- **Contact Us**: Form (name, email, message) stored in MongoDB, admin can review in dashboard
+- **Admin Dashboard**: Tabbed interface (Shops, Admins, Messages)
+- **Admin Management**: Add/remove multiple admins, self-deletion prevention
+- **Message Review**: Admin can view and mark contact form submissions as read
+- CUKP page with founders' story, stats, founder bios
+- Spotify embed player on each shop detail page
 - Full backend with all CRUD endpoints, dual auth, ratings, image upload, playlist support
-- 6 seeded sample coffee shops across UK cities with Spotify playlists
-- "Coffee Grounds" branding throughout
-- CUKP page with founders' story (Eleanor Whitfield & James Hartley), stats, quote, founder bios
-- CUKP teaser section on homepage
-- Spotify embed player on each shop detail page ("The Sound of {shop name}")
-- Admin playlist URL field for managing playlists per shop
-- Home page with hero, listings, search, sort
-- UK map with interactive markers
-- Admin dashboard with full CRUD + image upload + playlist badges
-- Admin credentials: test123 / 12345
+- 6 seeded sample coffee shops across UK cities
+- UK map view with interactive markers
+- Google Auth for user login, JWT for admin (test123/12345)
+- Warm earthy theme (Cormorant Garamond + Manrope)
 
 ## Prioritized Backlog
 - **P1**: Map clustering for dense areas, image reordering, user favorites
