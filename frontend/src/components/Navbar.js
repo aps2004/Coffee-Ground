@@ -117,9 +117,10 @@ export default function Navbar() {
 
           {/* Mobile menu toggle */}
           <button
-            className="md:hidden p-2 text-[#2C1A12]"
-            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden p-2 text-[#2C1A12] touch-manipulation"
+            onClick={(e) => { e.stopPropagation(); setMobileOpen(prev => !prev); }}
             data-testid="mobile-menu-toggle"
+            type="button"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
