@@ -1,0 +1,112 @@
+{
+  "project_name": "UK Coffee Shop Directory",
+  "theme_and_archetype": {
+    "theme": "light",
+    "archetype": "Archetype 1 (Organic & Earthy)",
+    "rationale": "To convey the warmth, coziness, and inviting nature of artisanal coffee shops. This archetype uses warm sands, deep espresso browns, and terracotta accents, establishing immediate trust and sensory comfort."
+  },
+  "color_palette": {
+    "css_variables": {
+      "--background": "43 33% 98%",
+      "--foreground": "22 41% 12%",
+      "--card": "43 33% 98%",
+      "--card-foreground": "22 41% 12%",
+      "--popover": "43 33% 98%",
+      "--popover-foreground": "22 41% 12%",
+      "--primary": "10 43% 50%",
+      "--primary-foreground": "43 33% 98%",
+      "--secondary": "41 24% 88%",
+      "--secondary-foreground": "25 33% 22%",
+      "--muted": "43 25% 93%",
+      "--muted-foreground": "28 15% 42%",
+      "--accent": "34 43% 71%",
+      "--accent-foreground": "22 41% 12%",
+      "--border": "41 24% 88%",
+      "--input": "41 24% 88%",
+      "--ring": "10 43% 50%",
+      "--radius": "0.25rem"
+    },
+    "description": "Backgrounds are Warm Bone White (#FDFBF7), text is Deep Espresso Brown (#2C1A12). Primary action color is Terracotta/Clay (#B55B49). Accents include Crema (#D4B996) and Warm Beige (#E8E3D9). NO pure black or generic gray."
+  },
+  "typography": {
+    "headings": {
+      "font_family": "Cormorant Garamond, serif",
+      "weights": ["light", "regular", "semibold"],
+      "styling": "tracking-tight, leading-none. Do not use generic sans for headings. Emphasize elegance."
+    },
+    "body": {
+      "font_family": "Manrope, sans-serif",
+      "weights": ["regular", "medium", "semibold"],
+      "styling": "leading-relaxed, highly legible geometric warmth."
+    },
+    "hierarchy": {
+      "h1": "text-5xl sm:text-6xl max-w-4xl",
+      "h2": "text-3xl sm:text-4xl",
+      "h3": "text-xl sm:text-2xl",
+      "body": "text-base sm:text-lg"
+    }
+  },
+  "layout_and_spacing": {
+    "philosophy": "Generous Spacing Philosophy. Use p-8 to p-16 for containers. Let the high-quality photography breathe.",
+    "collage_grid": "Use Mode A (The 'Tetris' Grid) for the coffee shop image collages. grid-cols-1 md:grid-cols-12 gap-6. Mix shapes: The Hero (col-span-8 row-span-2), The Square (col-span-4 row-span-1), The Tall (col-span-4 row-span-2).",
+    "map_section": "Embed the UK map within a Grid Borders wrapper or a subtle Neumorphic container to make it feel integrated, not like a raw Google Maps iframe."
+  },
+  "ui_components": {
+    "navigation": "Crystal Glass style. backdrop-blur-xl bg-[#FDFBF7]/80, with a delicate 1px border-b border-[#E8E3D9].",
+    "cards": "Subtle, slightly rounded edges (0.25rem). Flat backgrounds matching parent with 1px earthy border. On hover, slight lift (-translate-y-1) and warm shadow (shadow-[0_8px_32px_rgba(44,26,18,0.08)]).",
+    "buttons": "Terracotta primary background. White text. Avoid heavy border radius; keep it sleek and slightly sharp.",
+    "images": "Always wrap images in a container with a subtle background color in case of slow loading. Images must never exceed 80vh on mobile."
+  },
+  "motion": {
+    "scrolling": "Use 'lenis' for smooth scrolling. Momentum scrolling makes the editorial typography feel premium.",
+    "interactions": "Micro-interactions on buttons (scale down 0.98 on click). Staggered fade-up for image grids using Framer Motion."
+  },
+  "media": {
+    "images": [
+      {
+        "category": "hero_background",
+        "url": "https://static.prod-images.emergentagent.com/jobs/58221544-2517-4c5a-a9d4-e70eb05364b4/images/e3fc247f08016374c10295982c52156d698a56a42ab114393419a8ee0a7355d4.png",
+        "description": "Cinematic wide-angle shot of a cozy artisanal coffee shop interior. Use for the main hero section with a gradient overlay."
+      },
+      {
+        "category": "map_texture",
+        "url": "https://static.prod-images.emergentagent.com/jobs/58221544-2517-4c5a-a9d4-e70eb05364b4/images/1b5a042b4d4759c6cd300833903ab180b5be27badc565be53239a2aa3c25bc29.png",
+        "description": "Abstract topographical map texture. Can be used as a subtle background pattern behind the map section or listing cards."
+      },
+      {
+        "category": "feature_image",
+        "url": "https://static.prod-images.emergentagent.com/jobs/58221544-2517-4c5a-a9d4-e70eb05364b4/images/a83a575c4e4d7f6dff69e68b93b17cc703278a304c374c745c99e514db713608.png",
+        "description": "Close up macro photography of an artisanal latte. Perfect for breaking up text content or the about section."
+      },
+      {
+        "category": "collage_item_1",
+        "url": "https://images.unsplash.com/photo-1738327264976-fa0b8d9af52c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwzfHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Coffee shop exterior for listing collage."
+      },
+      {
+        "category": "collage_item_2",
+        "url": "https://images.unsplash.com/photo-1738327264238-ec102a3c626a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwyfHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Outdoor seating for listing collage."
+      },
+      {
+        "category": "collage_item_3",
+        "url": "https://images.unsplash.com/photo-1545399885-fd918e63002f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwxfHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Interior workspace for listing collage."
+      },
+      {
+        "category": "collage_item_4",
+        "url": "https://images.unsplash.com/photo-1588591741887-802be52c1171?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHw0fHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Menu and ambient interior for listing collage."
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "INSTALL PACKAGES: `lucide-react`, `framer-motion`, `lenis`, and mapping library (e.g., `leaflet` & `react-leaflet`).",
+    "FONTS: Import 'Cormorant Garamond' and 'Manrope' from Google Fonts and configure them in tailwind.config.js.",
+    "TESTING: Every button, link, and major interactive element MUST have a `data-testid` attribute (e.g., data-testid='shop-card-link').",
+    "AUTH: Implement Google Auth for users. Admin uses JWT. Ensure protected routes redirect properly.",
+    "HERO OVERLAY: Do not use flat heavy black overlays on the hero image. Use a warm gradient (from-black/60 to-transparent) that lets the warm amber tones of the coffee shop shine.",
+    "COLLAGE: Ensure the listing page has an asymmetric collage using grid layout. The 'Tetris' grid logic should govern the image sizes.",
+    "MAP VIEW: Make the map view toggleable or a prominent section. Style the map to match the warm earthy theme if possible."
+  ]
+}
