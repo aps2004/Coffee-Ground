@@ -62,14 +62,14 @@ export default function AdminLogin() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <Label className="text-[#2C1A12] text-sm font-medium">Email</Label>
+              <Label className="text-[#2C1A12] text-sm font-medium">Login Name</Label>
               <div className="relative mt-1.5">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B5744]" />
                 <Input
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@coffeeshops.uk"
+                  placeholder="Enter your login name"
                   className="pl-10 bg-[#FDFBF7] border-[#E8E3D9] focus:border-[#B55B49]"
                   required
                   data-testid="admin-email-input"

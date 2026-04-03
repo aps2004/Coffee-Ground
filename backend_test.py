@@ -69,8 +69,8 @@ class CoffeeShopAPITester:
         print("\n🔐 Testing Admin Authentication...")
         success, response = self.test_api_endpoint(
             'POST', 'auth/admin/login', 200,
-            data={"email": "admin@coffeeshops.uk", "password": "CoffeeAdmin2026!"},
-            description="Admin login"
+            data={"email": "test123", "password": "12345"},
+            description="Admin login with test123/12345"
         )
         
         if success and 'user_id' in response:
@@ -88,7 +88,7 @@ class CoffeeShopAPITester:
         if success and isinstance(shops_data, list) and len(shops_data) > 0:
             self.log_test("Shops data validation", True, f"Found {len(shops_data)} shops with proper structure")
             
-            # Test shop data structure
+            # Test shop data structure including playlist_url
             first_shop = shops_data[0]
             required_fields = ['shop_id', 'name', 'city', 'description', 'admin_rating']
             missing_fields = [field for field in required_fields if field not in first_shop]
@@ -96,6 +96,14 @@ class CoffeeShopAPITester:
                 self.log_test("Shop data structure", True, "All required fields present")
             else:
                 self.log_test("Shop data structure", False, f"Missing fields: {missing_fields}")
+            
+            # Test playlist_url field presence
+            has_playlist_url = 'playlist_url' in first_shop
+            self.log_test("Playlist URL field", has_playlist_url, "playlist_url field present in shop data")
+            
+            # Check if any shops have playlist URLs
+            shops_with_playlists = [s for s in shops_data if s.get('playlist_url')]
+            self.log_test("Shops with playlists", len(shops_with_playlists) > 0, f"{len(shops_with_playlists)} shops have playlist URLs")
         
         # Test GET /shops with sorting
         self.test_api_endpoint('GET', 'shops?sort_by=rating', 200, description="Sort by rating")
@@ -114,6 +122,9 @@ class CoffeeShopAPITester:
             success, shop_detail = self.test_api_endpoint('GET', f'shops/{shop_id}', 200, description="Shop detail")
             if success and 'ratings' in shop_detail:
                 self.log_test("Shop detail structure", True, "Includes ratings array")
+                # Check if playlist_url is in shop detail
+                has_playlist_detail = 'playlist_url' in shop_detail
+                self.log_test("Shop detail playlist URL", has_playlist_detail, "playlist_url field in shop detail")
 
     def test_admin_shop_operations(self):
         """Test admin CRUD operations (simulated)"""
@@ -133,7 +144,8 @@ class CoffeeShopAPITester:
             "latitude": 51.5074,
             "longitude": -0.1278,
             "admin_rating": 4.5,
-            "tags": ["test", "api"]
+            "tags": ["test", "api"],
+            "playlist_url": "https://open.spotify.com/embed/playlist/test123"
         }
         
         # Note: These would fail without proper authentication cookies, but we test the endpoint structure

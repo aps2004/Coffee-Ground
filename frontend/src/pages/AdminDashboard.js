@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Edit2, Trash2, Upload, X, Save, Image, MapPin, Star, Coffee } from 'lucide-react';
+import { Plus, Edit2, Trash2, Upload, X, Save, Image, MapPin, Star, Coffee, Music } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -24,6 +24,7 @@ function ShopForm({ shop, onSave, onCancel }) {
     longitude: shop?.longitude || 0,
     admin_rating: shop?.admin_rating || 0,
     tags: shop?.tags?.join(', ') || '',
+    playlist_url: shop?.playlist_url || '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -37,6 +38,7 @@ function ShopForm({ shop, onSave, onCancel }) {
         longitude: parseFloat(form.longitude) || 0,
         admin_rating: parseFloat(form.admin_rating) || 0,
         tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+        playlist_url: form.playlist_url,
       };
       await onSave(data);
     } catch (err) {
@@ -87,6 +89,11 @@ function ShopForm({ shop, onSave, onCancel }) {
       <div>
         <Label className="text-[#2C1A12] text-sm">Tags (comma separated)</Label>
         <Input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="specialty, pour-over, cozy" className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]" data-testid="shop-tags-input" />
+      </div>
+      <div>
+        <Label className="text-[#2C1A12] text-sm">Spotify Playlist URL</Label>
+        <Input value={form.playlist_url} onChange={(e) => setForm({ ...form, playlist_url: e.target.value })} placeholder="https://open.spotify.com/embed/playlist/..." className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]" data-testid="shop-playlist-input" />
+        <p className="text-xs text-[#6B5744]/60 mt-1">Paste a Spotify embed URL for the shop's recommended playlist</p>
       </div>
       <div className="flex gap-3 pt-2">
         <Button type="submit" disabled={saving} className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2" data-testid="shop-save-btn">
@@ -233,6 +240,11 @@ export default function AdminDashboard() {
                         <Star className="w-3 h-3 text-[#D4B996] fill-[#D4B996]" />
                         <span className="text-sm text-[#2C1A12]">{shop.admin_rating}</span>
                       </div>
+                      {shop.playlist_url && (
+                        <Badge variant="secondary" className="bg-[#B55B49]/10 text-[#B55B49] text-xs">
+                          <Music className="w-3 h-3 mr-1" /> Playlist
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-[#6B5744] text-sm line-clamp-2">{shop.description}</p>
 

@@ -40,7 +40,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-2 group" data-testid="nav-logo">
             <Coffee className="w-6 h-6 text-[#B55B49] group-hover:rotate-12 transition-transform" />
             <span className="font-['Cormorant_Garamond'] text-xl font-semibold text-[#2C1A12] tracking-tight">
-              UK Coffee Guide
+              Coffee Grounds
             </span>
           </Link>
 
@@ -54,6 +54,15 @@ export default function Navbar() {
               data-testid="nav-home"
             >
               Home
+            </Link>
+            <Link
+              to="/cukp"
+              className={`text-sm font-medium transition-colors ${
+                location.pathname === '/cukp' ? 'text-[#B55B49]' : 'text-[#6B5744] hover:text-[#2C1A12]'
+              }`}
+              data-testid="nav-cukp"
+            >
+              CUKP
             </Link>
             <Link
               to="/map"
@@ -131,6 +140,9 @@ export default function Navbar() {
           <div className="md:hidden border-t border-[#E8E3D9] py-4 space-y-3" data-testid="mobile-nav">
             <Link to="/" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
               Home
+            </Link>
+            <Link to="/cukp" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
+              CUKP
             </Link>
             <Link to="/map" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
               Map View

@@ -164,6 +164,7 @@ class ShopCreate(BaseModel):
     longitude: float = 0.0
     admin_rating: float = 0.0
     tags: List[str] = []
+    playlist_url: str = ""
 
 class ShopUpdate(BaseModel):
     name: Optional[str] = None
@@ -175,6 +176,7 @@ class ShopUpdate(BaseModel):
     longitude: Optional[float] = None
     admin_rating: Optional[float] = None
     tags: Optional[List[str]] = None
+    playlist_url: Optional[str] = None
 
 class RatingCreate(BaseModel):
     rating: float
@@ -487,8 +489,8 @@ async def get_shop_ratings(shop_id: str):
 # ---- SEED DATA ----
 
 async def seed_admin():
-    admin_email = os.environ.get("ADMIN_EMAIL", "admin@coffeeshops.uk").lower()
-    admin_password = os.environ.get("ADMIN_PASSWORD", "CoffeeAdmin2026!")
+    admin_email = os.environ.get("ADMIN_EMAIL", "test123").lower()
+    admin_password = os.environ.get("ADMIN_PASSWORD", "12345")
     existing = await db.users.find_one({"email": admin_email})
     if existing is None:
         user_id = f"admin_{uuid.uuid4().hex[:12]}"
@@ -529,6 +531,7 @@ async def seed_sample_shops():
             "avg_user_rating": 0.0,
             "rating_count": 0,
             "tags": ["specialty", "single-origin", "borough-market"],
+            "playlist_url": "https://open.spotify.com/embed/playlist/37i9dQZF1DXbm7HUcNMfjs?utm_source=generator&theme=0",
             "created_by": "system",
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
@@ -547,6 +550,7 @@ async def seed_sample_shops():
             "avg_user_rating": 0.0,
             "rating_count": 0,
             "tags": ["nordic", "pour-over", "northern-quarter"],
+            "playlist_url": "https://open.spotify.com/embed/playlist/37i9dQZF1DWYoYGBbGKurt?utm_source=generator&theme=0",
             "created_by": "system",
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
@@ -565,6 +569,7 @@ async def seed_sample_shops():
             "avg_user_rating": 0.0,
             "rating_count": 0,
             "tags": ["award-winning", "specialty", "innovative"],
+            "playlist_url": "https://open.spotify.com/embed/playlist/37i9dQZF1DX6VdMW310YC7?utm_source=generator&theme=0",
             "created_by": "system",
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
@@ -583,6 +588,7 @@ async def seed_sample_shops():
             "avg_user_rating": 0.0,
             "rating_count": 0,
             "tags": ["cozy", "old-town", "specialty"],
+            "playlist_url": "https://open.spotify.com/embed/playlist/37i9dQZF1DX4E3UdUs7fUx?utm_source=generator&theme=0",
             "created_by": "system",
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
@@ -601,6 +607,7 @@ async def seed_sample_shops():
             "avg_user_rating": 0.0,
             "rating_count": 0,
             "tags": ["roastery", "filter-coffee", "jewellery-quarter"],
+            "playlist_url": "https://open.spotify.com/embed/playlist/37i9dQZF1DWZd79rJ6a7lp?utm_source=generator&theme=0",
             "created_by": "system",
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
@@ -619,6 +626,7 @@ async def seed_sample_shops():
             "avg_user_rating": 0.0,
             "rating_count": 0,
             "tags": ["roastery", "culture", "bold"],
+            "playlist_url": "https://open.spotify.com/embed/playlist/37i9dQZF1DX0SM0LYsmbMT?utm_source=generator&theme=0",
             "created_by": "system",
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
@@ -653,11 +661,11 @@ async def startup():
     os.makedirs("/app/memory", exist_ok=True)
     with open("/app/memory/test_credentials.md", "w") as f:
         f.write("# Test Credentials\n\n")
-        f.write(f"## Admin\n- Email: {os.environ.get('ADMIN_EMAIL', 'admin@coffeeshops.uk')}\n")
-        f.write(f"- Password: {os.environ.get('ADMIN_PASSWORD', 'CoffeeAdmin2026!')}\n")
+        f.write(f"## Admin\n- Login Name: {os.environ.get('ADMIN_EMAIL', 'test123')}\n")
+        f.write(f"- Password: {os.environ.get('ADMIN_PASSWORD', '12345')}\n")
         f.write(f"- Role: admin\n\n")
         f.write("## Auth Endpoints\n")
-        f.write("- POST /api/auth/admin/login\n")
+        f.write("- POST /api/auth/admin/login (body: {email, password} - email field is used for login name)\n")
         f.write("- POST /api/auth/session (Google Auth)\n")
         f.write("- GET /api/auth/me\n")
         f.write("- POST /api/auth/logout\n\n")

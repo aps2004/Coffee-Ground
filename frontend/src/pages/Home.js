@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, Star, Search, Coffee, Map } from 'lucide-react';
+import { MapPin, Star, Search, Coffee, Map, ArrowRight, BookOpen } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -157,6 +157,59 @@ export default function Home() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* CUKP Teaser Section */}
+      <section className="bg-[#2C1A12] py-16 px-4 sm:px-8" data-testid="cukp-teaser">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <p className="text-[#D4B996] font-medium text-sm tracking-widest uppercase mb-3">Our Story</p>
+            <h2 className="font-['Cormorant_Garamond'] text-3xl sm:text-4xl font-light text-white tracking-tight mb-4">
+              The Coffee United<br />Kingdom Project
+            </h2>
+            <p className="text-white/70 leading-relaxed mb-6">
+              Two friends. One rusted camper van. A quest to discover, document, and celebrate every exceptional coffee shop across the UK. From Borough Market to Edinburgh's Old Town, the CUKP is our love letter to British coffee culture.
+            </p>
+            <Link to="/cukp" data-testid="cukp-read-more-btn">
+              <Button className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2 font-medium">
+                <BookOpen className="w-4 h-4" /> Read Our Story <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="relative"
+          >
+            <div className="bg-white/5 border border-white/10 rounded p-8">
+              <blockquote className="font-['Cormorant_Garamond'] text-2xl italic text-white/90 leading-relaxed">
+                "Every great coffee shop has a soul. Our job is simply to find it and share it with the world."
+              </blockquote>
+              <p className="text-[#D4B996] text-sm mt-4">Eleanor Whitfield, Co-founder</p>
+              <div className="flex gap-8 mt-6 pt-6 border-t border-white/10">
+                <div>
+                  <p className="text-2xl font-['Cormorant_Garamond'] font-semibold text-white">2,847</p>
+                  <p className="text-xs text-white/50">Cups tasted</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-['Cormorant_Garamond'] font-semibold text-white">186</p>
+                  <p className="text-xs text-white/50">Cities visited</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-['Cormorant_Garamond'] font-semibold text-white">423</p>
+                  <p className="text-xs text-white/50">Interviews</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </section>
     </div>
   );

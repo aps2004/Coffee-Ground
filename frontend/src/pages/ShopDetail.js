@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, Star, ArrowLeft, Clock, Tag, MessageSquare, Send } from 'lucide-react';
+import { MapPin, Star, ArrowLeft, Clock, Tag, MessageSquare, Send, Music } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Textarea } from '../components/ui/textarea';
@@ -179,6 +179,50 @@ export default function ShopDetail() {
               >
                 <h3 className="font-['Cormorant_Garamond'] text-2xl font-light text-[#2C1A12] mb-6">Gallery</h3>
                 <ImageCollage images={shopImages} />
+              </motion.div>
+            )}
+
+            {/* Shop Playlist / Music Section */}
+            {shop.playlist_url && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-12"
+                data-testid="shop-playlist"
+              >
+                <h3 className="font-['Cormorant_Garamond'] text-2xl font-light text-[#2C1A12] mb-2">
+                  <Music className="w-5 h-5 inline mr-2" />
+                  The Sound of {shop.name}
+                </h3>
+                <p className="text-[#6B5744] text-sm mb-5">
+                  A playlist curated by the shop, as recommended to our editors
+                </p>
+                <div className="rounded overflow-hidden border border-[#E8E3D9] bg-[#2C1A12]">
+                  <iframe
+                    title={`${shop.name} playlist`}
+                    src={(() => {
+                      let url = shop.playlist_url;
+                      // Convert regular Spotify URLs to embed URLs
+                      if (url.includes('open.spotify.com') && !url.includes('/embed/')) {
+                        url = url.replace('open.spotify.com/', 'open.spotify.com/embed/');
+                      }
+                      // Add required query params if missing
+                      if (!url.includes('utm_source')) {
+                        url += (url.includes('?') ? '&' : '?') + 'utm_source=generator&theme=0';
+                      }
+                      return url;
+                    })()}
+                    width="100%"
+                    height="352"
+                    frameBorder="0"
+                    allowFullScreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                    style={{ borderRadius: '0.5rem' }}
+                    data-testid="spotify-embed"
+                  />
+                </div>
               </motion.div>
             )}
 

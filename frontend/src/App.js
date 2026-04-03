@@ -8,6 +8,7 @@ import MapView from './pages/MapView';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AuthCallback from './pages/AuthCallback';
+import CUKPPage from './pages/CUKPPage';
 import './App.css';
 
 function AppRouter() {
@@ -26,6 +27,7 @@ function AppRouter() {
           <Route path="/" element={<Home />} />
           <Route path="/shop/:shopId" element={<ShopDetail />} />
           <Route path="/map" element={<MapView />} />
+          <Route path="/cukp" element={<CUKPPage />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
@@ -33,7 +35,7 @@ function AppRouter() {
       {/* Footer */}
       <footer className="bg-[#2C1A12] text-white/60 py-10 px-4 sm:px-8" data-testid="footer">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="font-['Cormorant_Garamond'] text-lg text-white/80">UK Coffee Guide</p>
+          <p className="font-['Cormorant_Garamond'] text-lg text-white/80">Coffee Grounds</p>
           <p className="text-xs">Curating the finest coffee experiences across the United Kingdom</p>
         </div>
       </footer>
