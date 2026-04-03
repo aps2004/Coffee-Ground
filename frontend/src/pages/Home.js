@@ -11,27 +11,11 @@ import ShopCard from '../components/ShopCard';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-function FeaturedShopCard({ shop }) {
-  const rating = shop.rating_count > 0 && shop.admin_rating > 0
-    ? ((shop.admin_rating + shop.avg_user_rating) / 2).toFixed(1)
-    : shop.admin_rating?.toFixed(1) || '0.0';
-
-  return (
-    <Link to={`/shop/${shop.shop_id}`} className="group block" data-testid={`featured-shop-${shop.shop_id}`}>
-      <div className="flex items-start gap-3 py-3 border-b border-[#E8E3D9]/60 last:border-0 hover:bg-[#E8E3D9]/20 -mx-2 px-2 rounded transition-colors">
-        <div className="flex items-center gap-1 bg-[#B55B49]/10 text-[#B55B49] px-2 py-0.5 rounded text-xs font-semibold shrink-0 mt-0.5">
-          <Star className="w-3 h-3 fill-[#B55B49]" /> {rating}
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-[#2C1A12] group-hover:text-[#B55B49] transition-colors truncate">{shop.name}</p>
-          <p className="text-xs text-[#6B5744] flex items-center gap-1 mt-0.5">
-            <MapPin className="w-3 h-3 shrink-0" /> {shop.city}
-          </p>
-        </div>
-      </div>
-    </Link>
-  );
-}
+const PLACEHOLDER_IMAGES = [
+  "https://images.unsplash.com/photo-1738327264976-fa0b8d9af52c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwzfHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
+  "https://images.unsplash.com/photo-1545399885-fd918e63002f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwxfHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
+  "https://images.unsplash.com/photo-1588591741887-802be52c1171?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHw0fHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85"
+];
 
 export default function Home() {
   const [shops, setShops] = useState([]);
@@ -60,34 +44,44 @@ export default function Home() {
     s.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const featured = shops.length > 0 ? shops[0] : null;
+  const featuredImages = featured?.images?.length > 0
+    ? featured.images.slice(0, 3).map(img => `${API}/files/${img.storage_path}`)
+    : PLACEHOLDER_IMAGES;
+  const featuredRating = featured
+    ? (featured.rating_count > 0 && featured.admin_rating > 0
+        ? ((featured.admin_rating + featured.avg_user_rating) / 2).toFixed(1)
+        : featured.admin_rating?.toFixed(1) || '0.0')
+    : '0.0';
+
   return (
     <div className="min-h-screen">
-      {/* Hero Section — "Coffee Grounds" prominent, featured shops on right */}
+      {/* Hero Section — "Coffee Grounds" prominent + featured shop card */}
       <section className="relative bg-[#FDFBF7] overflow-hidden" data-testid="hero-section">
         {/* Subtle decorative shapes */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-[#D4B996]/8 -translate-y-1/2 translate-x-1/4" />
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-[#B55B49]/5 translate-y-1/3 -translate-x-1/4" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-12 sm:pt-20 pb-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start min-h-[70vh]">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-4 sm:pt-8 pb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start min-h-[65vh]">
             {/* Left — Main content */}
-            <div className="lg:col-span-7">
+            <div className="lg:col-span-5">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7 }}
               >
                 <h1
-                  className="font-['Cormorant_Garamond'] text-7xl sm:text-8xl lg:text-[7.5rem] font-light text-[#2C1A12] tracking-tight leading-[0.95] mb-6"
+                  className="font-['Cormorant_Garamond'] text-7xl sm:text-8xl lg:text-[7.5rem] font-light text-[#2C1A12] tracking-tight leading-[0.95] mb-5"
                   data-testid="hero-title"
                 >
                   Coffee<br />
                   <span className="italic font-normal">Grounds</span>
                 </h1>
-                <p className="text-[#6B5744] text-base sm:text-lg max-w-md mb-8 leading-relaxed">
+                <p className="text-[#6B5744] text-base sm:text-lg max-w-md mb-6 leading-relaxed">
                   Best Cafes and Coffee in the UK
                 </p>
-                <p className="text-[#6B5744]/70 text-sm max-w-sm mb-10 leading-relaxed">
+                <p className="text-[#6B5744]/70 text-sm max-w-sm mb-8 leading-relaxed">
                   A curated guide to the most exceptional coffee shops across the United Kingdom, handpicked by our editors.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -105,29 +99,71 @@ export default function Home() {
               </motion.div>
             </div>
 
-            {/* Right — Featured shops compact listing */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, delay: 0.25 }}
-              className="lg:col-span-5"
-              data-testid="featured-shops"
-            >
-              <div className="bg-white border border-[#E8E3D9] rounded-lg p-5 shadow-[0_4px_24px_rgba(44,26,18,0.05)]">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-['Cormorant_Garamond'] text-lg font-semibold text-[#2C1A12]">Featured Shops</h2>
-                  <Link to="/map" className="text-xs text-[#B55B49] hover:underline font-medium">View all</Link>
+            {/* Right — Featured coffee shop card (compact) */}
+            {featured && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.25 }}
+                className="lg:col-span-7"
+                data-testid="featured-shop-card"
+              >
+                <div className="relative bg-white border border-[#E8E3D9] rounded-lg overflow-hidden shadow-[0_8px_40px_rgba(44,26,18,0.07)] max-w-lg lg:max-w-none lg:ml-auto">
+                  {/* Featured flag — top left cream badge */}
+                  <div className="absolute top-3 left-3 z-10" data-testid="featured-flag">
+                    <span className="bg-[#F5F0E8] text-[#6B5744] text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded shadow-sm border border-[#E8E3D9]/60">
+                      Featured
+                    </span>
+                  </div>
+                  {/* Thumbnails row — smaller height, slow zoom on hover */}
+                  <div className="grid grid-cols-12 gap-[3px] h-40 bg-[#E8E3D9]">
+                    <div className="col-span-7 overflow-hidden">
+                      <img src={featuredImages[0]} alt={featured.name} className="w-full h-full object-cover transition-transform duration-[2000ms] ease-out hover:scale-110" />
+                    </div>
+                    <div className="col-span-5 grid grid-rows-2 gap-[3px]">
+                      <div className="overflow-hidden">
+                        <img src={featuredImages[1] || featuredImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-[2000ms] ease-out hover:scale-110" />
+                      </div>
+                      <div className="overflow-hidden">
+                        <img src={featuredImages[2] || featuredImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-[2000ms] ease-out hover:scale-110" />
+                      </div>
+                    </div>
+                  </div>
+                  {/* Card content — tighter padding */}
+                  <div className="p-5">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="flex items-center gap-1 bg-[#E8E3D9]/60 px-2 py-0.5 rounded">
+                        <Star className="w-3.5 h-3.5 text-[#D4B996] fill-[#D4B996]" />
+                        <span className="text-sm font-semibold text-[#2C1A12]">{featuredRating}</span>
+                      </div>
+                    </div>
+                    <h2 className="font-['Cormorant_Garamond'] text-xl sm:text-2xl font-semibold text-[#2C1A12] tracking-tight mb-1" data-testid="featured-shop-name">
+                      {featured.name}
+                    </h2>
+                    <p className="text-[#6B5744] text-xs flex items-center gap-1 mb-3">
+                      <MapPin className="w-3 h-3" /> {featured.city}{featured.address ? ` — ${featured.address}` : ''}
+                    </p>
+                    <p className="text-[#2C1A12]/70 text-sm leading-relaxed line-clamp-2 mb-4" data-testid="featured-shop-desc">
+                      {featured.description}
+                    </p>
+                    {featured.tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {featured.tags.slice(0, 3).map(tag => (
+                          <Badge key={tag} variant="secondary" className="bg-[#E8E3D9]/60 text-[#6B5744] text-xs px-2 py-0">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    <Link to={`/shop/${featured.shop_id}`} data-testid="featured-more-btn">
+                      <Button size="sm" className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2 font-medium">
+                        More <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-                <div>
-                  {shops.slice(0, 5).map(shop => (
-                    <FeaturedShopCard key={shop.shop_id} shop={shop} />
-                  ))}
-                  {shops.length === 0 && !loading && (
-                    <p className="text-sm text-[#6B5744]/60 py-4 text-center">Loading shops...</p>
-                  )}
-                </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
           </div>
 
           {/* Scroll down indicator */}
@@ -135,7 +171,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 0.6 }}
-            className="flex justify-center mt-4 pb-2"
+            className="flex justify-center mt-6 pb-2"
           >
             <a href="#listings" className="flex flex-col items-center gap-1 text-[#6B5744]/60 hover:text-[#B55B49] transition-colors group" data-testid="scroll-indicator">
               <span className="text-xs font-medium tracking-wide">Scroll down for more shops</span>
@@ -220,8 +256,8 @@ export default function Home() {
         )}
       </section>
 
-      {/* CUKP Teaser Section */}
-      <section className="bg-[#2C1A12] py-16 px-4 sm:px-8" data-testid="cukp-teaser">
+      {/* CUKP Teaser Section — lighter colour distinct from footer */}
+      <section className="bg-[#3D2A1E] py-16 px-4 sm:px-8" data-testid="cukp-teaser">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
