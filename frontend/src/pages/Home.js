@@ -11,7 +11,38 @@ import ShopCard from '../components/ShopCard';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const HERO_IMAGE = "https://static.prod-images.emergentagent.com/jobs/58221544-2517-4c5a-a9d4-e70eb05364b4/images/e3fc247f08016374c10295982c52156d698a56a42ab114393419a8ee0a7355d4.png";
+function CoffeeCupIllustration() {
+  return (
+    <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+      {/* Saucer */}
+      <ellipse cx="200" cy="320" rx="150" ry="30" fill="#E8E3D9" />
+      <ellipse cx="200" cy="315" rx="130" ry="24" fill="#F0EBE3" />
+      {/* Cup body */}
+      <path d="M120 180 C120 180 115 300 200 300 C285 300 280 180 280 180 Z" fill="#FDFBF7" stroke="#D4B996" strokeWidth="3" />
+      {/* Coffee surface */}
+      <ellipse cx="200" cy="185" rx="80" ry="18" fill="#8B5E3C" />
+      <ellipse cx="200" cy="183" rx="70" ry="14" fill="#A0714B" />
+      {/* Latte art - simple heart */}
+      <path d="M190 178 C190 172 195 170 200 174 C205 170 210 172 210 178 C210 184 200 190 200 190 C200 190 190 184 190 178Z" fill="#D4B996" opacity="0.7" />
+      {/* Handle */}
+      <path d="M280 210 C320 210 320 270 280 270" stroke="#D4B996" strokeWidth="4" fill="none" strokeLinecap="round" />
+      {/* Steam lines */}
+      <motion.path d="M170 150 C170 130 185 135 185 115" stroke="#D4B996" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.5"
+        initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 0.5 }} transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }} />
+      <motion.path d="M200 145 C200 125 215 130 215 110" stroke="#D4B996" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.4"
+        initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 0.4 }} transition={{ duration: 2.5, delay: 0.3, repeat: Infinity, repeatType: "reverse" }} />
+      <motion.path d="M230 150 C230 130 245 135 245 115" stroke="#D4B996" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.5"
+        initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 0.5 }} transition={{ duration: 2, delay: 0.6, repeat: Infinity, repeatType: "reverse" }} />
+      {/* Coffee beans scattered */}
+      <ellipse cx="80" cy="280" rx="12" ry="8" transform="rotate(-30 80 280)" fill="#6B4226" opacity="0.3" />
+      <line x1="76" y1="276" x2="84" y2="284" stroke="#5A3520" strokeWidth="1" opacity="0.3" />
+      <ellipse cx="320" cy="260" rx="10" ry="7" transform="rotate(20 320 260)" fill="#6B4226" opacity="0.25" />
+      <line x1="317" y1="256" x2="323" y2="264" stroke="#5A3520" strokeWidth="1" opacity="0.25" />
+      <ellipse cx="100" cy="340" rx="10" ry="7" transform="rotate(15 100 340)" fill="#6B4226" opacity="0.2" />
+      <ellipse cx="310" cy="330" rx="9" ry="6" transform="rotate(-20 310 330)" fill="#6B4226" opacity="0.2" />
+    </svg>
+  );
+}
 
 export default function Home() {
   const [shops, setShops] = useState([]);
@@ -42,49 +73,86 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative h-[85vh] flex items-center justify-center overflow-hidden" data-testid="hero-section">
-        <div className="absolute inset-0">
-          <img
-            src={HERO_IMAGE}
-            alt="Coffee shop interior"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#2C1A12]/70 via-[#2C1A12]/40 to-[#FDFBF7]" />
-        </div>
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1
-              className="font-['Cormorant_Garamond'] text-5xl sm:text-6xl lg:text-7xl font-light text-white tracking-tight leading-none mb-6"
-              data-testid="hero-title"
+      {/* Hero Section — Illustration Style */}
+      <section className="relative bg-[#FDFBF7] overflow-hidden" data-testid="hero-section">
+        {/* Decorative background shapes */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-[#D4B996]/10 -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-[#B55B49]/5 translate-y-1/3 -translate-x-1/4" />
+        <div className="absolute top-1/3 left-1/4 w-3 h-3 rounded-full bg-[#D4B996]/30" />
+        <div className="absolute top-1/4 right-1/3 w-2 h-2 rounded-full bg-[#B55B49]/20" />
+        <div className="absolute bottom-1/4 left-1/3 w-4 h-4 rounded-full bg-[#D4B996]/20" />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-16 sm:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[60vh]">
+            {/* Left - Text Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
             >
-              Discover the UK's<br />
-              <span className="italic font-normal">Finest Coffee</span>
-            </h1>
-            <p className="text-white/80 text-base sm:text-lg max-w-xl mx-auto mb-8 font-light">
-              A curated guide to the most exceptional coffee shops across the United Kingdom
-            </p>
-          </motion.div>
+              <p className="text-[#B55B49] font-medium text-sm tracking-widest uppercase mb-5">
+                Coffee Grounds
+              </p>
+              <h1
+                className="font-['Cormorant_Garamond'] text-5xl sm:text-6xl lg:text-7xl font-light text-[#2C1A12] tracking-tight leading-[1.05] mb-6"
+                data-testid="hero-title"
+              >
+                Best Cafes and<br />Coffee in<br />
+                <span className="italic font-normal text-[#B55B49]">the UK</span>
+              </h1>
+              <p className="text-[#6B5744] text-base sm:text-lg max-w-md mb-10 leading-relaxed">
+                A curated guide to the most exceptional coffee shops across the United Kingdom, handpicked by our editors.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link to="/map" data-testid="explore-map-btn">
+                  <Button size="lg" className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white px-8 gap-2 font-medium">
+                    <Map className="w-4 h-4" /> Explore Map
+                  </Button>
+                </Link>
+                <a href="#listings" data-testid="browse-listings-btn">
+                  <Button size="lg" variant="outline" className="border-[#E8E3D9] text-[#2C1A12] hover:bg-[#E8E3D9] px-8 gap-2 font-medium">
+                    <Coffee className="w-4 h-4" /> Browse Listings
+                  </Button>
+                </a>
+              </div>
+            </motion.div>
+
+            {/* Right - Illustration */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="hidden lg:flex items-center justify-center"
+            >
+              <div className="w-[380px] h-[380px]">
+                <CoffeeCupIllustration />
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Stats bar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="flex flex-wrap gap-8 sm:gap-16 mt-8 pt-8 border-t border-[#E8E3D9]"
           >
-            <Link to="/map" data-testid="explore-map-btn">
-              <Button size="lg" className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white px-8 gap-2 font-medium">
-                <Map className="w-4 h-4" /> Explore Map
-              </Button>
-            </Link>
-            <a href="#listings" data-testid="browse-listings-btn">
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 px-8 gap-2 font-medium bg-white/5 backdrop-blur-sm">
-                <Coffee className="w-4 h-4" /> Browse Listings
-              </Button>
-            </a>
+            <div>
+              <p className="text-2xl font-['Cormorant_Garamond'] font-semibold text-[#2C1A12]">6+</p>
+              <p className="text-xs text-[#6B5744]">Curated Shops</p>
+            </div>
+            <div>
+              <p className="text-2xl font-['Cormorant_Garamond'] font-semibold text-[#2C1A12]">6</p>
+              <p className="text-xs text-[#6B5744]">Cities Covered</p>
+            </div>
+            <div>
+              <p className="text-2xl font-['Cormorant_Garamond'] font-semibold text-[#2C1A12]">4.3 - 4.9</p>
+              <p className="text-xs text-[#6B5744]">Editor Ratings</p>
+            </div>
+            <div>
+              <p className="text-2xl font-['Cormorant_Garamond'] font-semibold text-[#B55B49]">Free</p>
+              <p className="text-xs text-[#6B5744]">Always Open Access</p>
+            </div>
           </motion.div>
         </div>
       </section>
