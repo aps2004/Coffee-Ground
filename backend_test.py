@@ -10,9 +10,11 @@ class CoffeeShopAPITester:
         self.base_url = base_url
         self.admin_token = None
         self.session_token = None
+        self.admin_cookies = None
         self.tests_run = 0
         self.tests_passed = 0
         self.created_shop_id = None
+        self.failed_tests = []
 
     def log_test(self, name, success, details=""):
         """Log test result"""
@@ -22,6 +24,7 @@ class CoffeeShopAPITester:
             print(f"✅ {name}")
         else:
             print(f"❌ {name} - {details}")
+            self.failed_tests.append(f"{name}: {details}")
         
         if details and success:
             print(f"   {details}")
@@ -67,17 +70,24 @@ class CoffeeShopAPITester:
     def test_admin_login(self):
         """Test admin login"""
         print("\n🔐 Testing Admin Authentication...")
-        success, response = self.test_api_endpoint(
-            'POST', 'auth/admin/login', 200,
-            data={"email": "test123", "password": "12345"},
-            description="Admin login with test123/12345"
-        )
         
-        if success and 'user_id' in response:
-            # Note: In real implementation, we'd get cookies, but for testing we'll simulate
-            self.admin_token = "admin_authenticated"
-            return True
-        return False
+        # Make actual login request to get cookies
+        try:
+            login_url = f"{self.base_url}/auth/admin/login"
+            response = requests.post(login_url, json={"email": "test123", "password": "12345"}, timeout=10)
+            
+            if response.status_code == 200:
+                self.log_test("Admin login with test123/12345", True, f"Status: {response.status_code}")
+                # Store cookies for subsequent admin requests
+                self.admin_cookies = response.cookies
+                self.admin_token = "admin_authenticated"
+                return True
+            else:
+                self.log_test("Admin login with test123/12345", False, f"Status: {response.status_code}, Response: {response.text[:100]}")
+                return False
+        except Exception as e:
+            self.log_test("Admin login with test123/12345", False, f"Error: {str(e)}")
+            return False
 
     def test_shops_endpoints(self):
         """Test shop-related endpoints"""
@@ -193,6 +203,82 @@ class CoffeeShopAPITester:
         # Test non-existent file
         self.test_api_endpoint('GET', 'files/nonexistent/path.jpg', 404, description="Non-existent file")
 
+    def test_contact_endpoints(self):
+        """Test contact form submission and admin retrieval"""
+        print("\n📧 Testing Contact Endpoints...")
+        
+        # Test contact form submission
+        contact_data = {
+            "name": "Test User",
+            "email": "test@example.com", 
+            "message": "This is a test message from the automated test suite."
+        }
+        
+        success, response = self.test_api_endpoint('POST', 'contact', 200, 
+                                                 data=contact_data, 
+                                                 description="Submit contact form")
+        
+        if success and self.admin_cookies:
+            # Test admin retrieval of contact messages
+            success, contacts = self.test_api_endpoint('GET', 'contact', 200,
+                                                     headers={'Cookie': f'access_token={self.admin_cookies.get("access_token", "")}'},
+                                                     description="Get contact messages (admin)")
+            if success and isinstance(contacts, list):
+                print(f"   Found {len(contacts)} contact message(s)")
+                
+                # Test marking a message as read if any exist
+                if contacts and len(contacts) > 0:
+                    contact_id = contacts[0].get('contact_id')
+                    if contact_id:
+                        self.test_api_endpoint('PUT', f'contact/{contact_id}/read', 200,
+                                             headers={'Cookie': f'access_token={self.admin_cookies.get("access_token", "")}'},
+                                             description="Mark contact as read")
+
+    def test_admin_management_endpoints(self):
+        """Test admin management (add/remove admins)"""
+        print("\n👥 Testing Admin Management Endpoints...")
+        
+        if not self.admin_cookies:
+            print("   Skipping admin management tests - no admin authentication")
+            return
+            
+        # Test list admins
+        success, admins = self.test_api_endpoint('GET', 'auth/admins', 200,
+                                               headers={'Cookie': f'access_token={self.admin_cookies.get("access_token", "")}'},
+                                               description="List all admins")
+        
+        if success and isinstance(admins, list):
+            print(f"   Found {len(admins)} admin(s)")
+            
+            # Test create new admin
+            new_admin_data = {
+                "login_name": f"testadmin_{datetime.now().strftime('%H%M%S')}",
+                "password": "testpass123",
+                "name": "Test Admin"
+            }
+            
+            success, new_admin = self.test_api_endpoint('POST', 'auth/admins', 200,
+                                                      data=new_admin_data,
+                                                      headers={'Cookie': f'access_token={self.admin_cookies.get("access_token", "")}'},
+                                                      description="Create new admin")
+            
+            if success and new_admin.get('user_id'):
+                new_admin_id = new_admin['user_id']
+                print(f"   Created admin with ID: {new_admin_id}")
+                
+                # Test delete the created admin (should work)
+                success, _ = self.test_api_endpoint('DELETE', f'auth/admins/{new_admin_id}', 200,
+                                                  headers={'Cookie': f'access_token={self.admin_cookies.get("access_token", "")}'},
+                                                  description="Delete created admin")
+                
+                # Test self-deletion prevention (should fail)
+                if admins and len(admins) > 0:
+                    current_admin_id = admins[0].get('user_id')  # Assuming first admin is current user
+                    if current_admin_id:
+                        self.test_api_endpoint('DELETE', f'auth/admins/{current_admin_id}', 400,
+                                             headers={'Cookie': f'access_token={self.admin_cookies.get("access_token", "")}'},
+                                             description="Prevent self-deletion (expect 400)")
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Coffee Shop API Tests")
@@ -214,6 +300,8 @@ class CoffeeShopAPITester:
         self.test_rating_endpoints()
         self.test_auth_endpoints()
         self.test_file_endpoints()
+        self.test_contact_endpoints()
+        self.test_admin_management_endpoints()
         
         # Print summary
         print("\n" + "=" * 60)

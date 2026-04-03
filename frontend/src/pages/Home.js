@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, Star, Search, Coffee, Map, ArrowRight, BookOpen } from 'lucide-react';
+import { MapPin, Star, Search, Coffee, Map, ArrowRight, BookOpen, ChevronDown } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -11,36 +11,25 @@ import ShopCard from '../components/ShopCard';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-function CoffeeCupIllustration() {
+function FeaturedShopCard({ shop }) {
+  const rating = shop.rating_count > 0 && shop.admin_rating > 0
+    ? ((shop.admin_rating + shop.avg_user_rating) / 2).toFixed(1)
+    : shop.admin_rating?.toFixed(1) || '0.0';
+
   return (
-    <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-      {/* Saucer */}
-      <ellipse cx="200" cy="320" rx="150" ry="30" fill="#E8E3D9" />
-      <ellipse cx="200" cy="315" rx="130" ry="24" fill="#F0EBE3" />
-      {/* Cup body */}
-      <path d="M120 180 C120 180 115 300 200 300 C285 300 280 180 280 180 Z" fill="#FDFBF7" stroke="#D4B996" strokeWidth="3" />
-      {/* Coffee surface */}
-      <ellipse cx="200" cy="185" rx="80" ry="18" fill="#8B5E3C" />
-      <ellipse cx="200" cy="183" rx="70" ry="14" fill="#A0714B" />
-      {/* Latte art - simple heart */}
-      <path d="M190 178 C190 172 195 170 200 174 C205 170 210 172 210 178 C210 184 200 190 200 190 C200 190 190 184 190 178Z" fill="#D4B996" opacity="0.7" />
-      {/* Handle */}
-      <path d="M280 210 C320 210 320 270 280 270" stroke="#D4B996" strokeWidth="4" fill="none" strokeLinecap="round" />
-      {/* Steam lines */}
-      <motion.path d="M170 150 C170 130 185 135 185 115" stroke="#D4B996" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.5"
-        initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 0.5 }} transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }} />
-      <motion.path d="M200 145 C200 125 215 130 215 110" stroke="#D4B996" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.4"
-        initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 0.4 }} transition={{ duration: 2.5, delay: 0.3, repeat: Infinity, repeatType: "reverse" }} />
-      <motion.path d="M230 150 C230 130 245 135 245 115" stroke="#D4B996" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.5"
-        initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 0.5 }} transition={{ duration: 2, delay: 0.6, repeat: Infinity, repeatType: "reverse" }} />
-      {/* Coffee beans scattered */}
-      <ellipse cx="80" cy="280" rx="12" ry="8" transform="rotate(-30 80 280)" fill="#6B4226" opacity="0.3" />
-      <line x1="76" y1="276" x2="84" y2="284" stroke="#5A3520" strokeWidth="1" opacity="0.3" />
-      <ellipse cx="320" cy="260" rx="10" ry="7" transform="rotate(20 320 260)" fill="#6B4226" opacity="0.25" />
-      <line x1="317" y1="256" x2="323" y2="264" stroke="#5A3520" strokeWidth="1" opacity="0.25" />
-      <ellipse cx="100" cy="340" rx="10" ry="7" transform="rotate(15 100 340)" fill="#6B4226" opacity="0.2" />
-      <ellipse cx="310" cy="330" rx="9" ry="6" transform="rotate(-20 310 330)" fill="#6B4226" opacity="0.2" />
-    </svg>
+    <Link to={`/shop/${shop.shop_id}`} className="group block" data-testid={`featured-shop-${shop.shop_id}`}>
+      <div className="flex items-start gap-3 py-3 border-b border-[#E8E3D9]/60 last:border-0 hover:bg-[#E8E3D9]/20 -mx-2 px-2 rounded transition-colors">
+        <div className="flex items-center gap-1 bg-[#B55B49]/10 text-[#B55B49] px-2 py-0.5 rounded text-xs font-semibold shrink-0 mt-0.5">
+          <Star className="w-3 h-3 fill-[#B55B49]" /> {rating}
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-[#2C1A12] group-hover:text-[#B55B49] transition-colors truncate">{shop.name}</p>
+          <p className="text-xs text-[#6B5744] flex items-center gap-1 mt-0.5">
+            <MapPin className="w-3 h-3 shrink-0" /> {shop.city}
+          </p>
+        </div>
+      </div>
+    </Link>
   );
 }
 
@@ -73,86 +62,90 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section — Illustration Style */}
+      {/* Hero Section — "Coffee Grounds" prominent, featured shops on right */}
       <section className="relative bg-[#FDFBF7] overflow-hidden" data-testid="hero-section">
-        {/* Decorative background shapes */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-[#D4B996]/10 -translate-y-1/2 translate-x-1/4" />
+        {/* Subtle decorative shapes */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-[#D4B996]/8 -translate-y-1/2 translate-x-1/4" />
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-[#B55B49]/5 translate-y-1/3 -translate-x-1/4" />
-        <div className="absolute top-1/3 left-1/4 w-3 h-3 rounded-full bg-[#D4B996]/30" />
-        <div className="absolute top-1/4 right-1/3 w-2 h-2 rounded-full bg-[#B55B49]/20" />
-        <div className="absolute bottom-1/4 left-1/3 w-4 h-4 rounded-full bg-[#D4B996]/20" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-16 sm:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[60vh]">
-            {/* Left - Text Content */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <p className="text-[#B55B49] font-medium text-sm tracking-widest uppercase mb-5">
-                Coffee Grounds
-              </p>
-              <h1
-                className="font-['Cormorant_Garamond'] text-5xl sm:text-6xl lg:text-7xl font-light text-[#2C1A12] tracking-tight leading-[1.05] mb-6"
-                data-testid="hero-title"
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-12 sm:pt-20 pb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start min-h-[70vh]">
+            {/* Left — Main content */}
+            <div className="lg:col-span-7">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7 }}
               >
-                Best Cafes and<br />Coffee in<br />
-                <span className="italic font-normal text-[#B55B49]">the UK</span>
-              </h1>
-              <p className="text-[#6B5744] text-base sm:text-lg max-w-md mb-10 leading-relaxed">
-                A curated guide to the most exceptional coffee shops across the United Kingdom, handpicked by our editors.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/map" data-testid="explore-map-btn">
-                  <Button size="lg" className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white px-8 gap-2 font-medium">
-                    <Map className="w-4 h-4" /> Explore Map
-                  </Button>
-                </Link>
-                <a href="#listings" data-testid="browse-listings-btn">
-                  <Button size="lg" variant="outline" className="border-[#E8E3D9] text-[#2C1A12] hover:bg-[#E8E3D9] px-8 gap-2 font-medium">
-                    <Coffee className="w-4 h-4" /> Browse Listings
-                  </Button>
-                </a>
-              </div>
-            </motion.div>
+                <h1
+                  className="font-['Cormorant_Garamond'] text-7xl sm:text-8xl lg:text-[7.5rem] font-light text-[#2C1A12] tracking-tight leading-[0.95] mb-6"
+                  data-testid="hero-title"
+                >
+                  Coffee<br />
+                  <span className="italic font-normal">Grounds</span>
+                </h1>
+                <p className="text-[#6B5744] text-base sm:text-lg max-w-md mb-8 leading-relaxed">
+                  Best Cafes and Coffee in the UK
+                </p>
+                <p className="text-[#6B5744]/70 text-sm max-w-sm mb-10 leading-relaxed">
+                  A curated guide to the most exceptional coffee shops across the United Kingdom, handpicked by our editors.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link to="/map" data-testid="explore-map-btn">
+                    <Button size="lg" className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white px-8 gap-2 font-medium">
+                      <MapPin className="w-4 h-4" /> Explore Map
+                    </Button>
+                  </Link>
+                  <a href="#listings" data-testid="browse-listings-btn">
+                    <Button size="lg" variant="outline" className="border-[#E8E3D9] text-[#2C1A12] hover:bg-[#E8E3D9] px-8 gap-2 font-medium">
+                      <Coffee className="w-4 h-4" /> All Listings
+                    </Button>
+                  </a>
+                </div>
+              </motion.div>
+            </div>
 
-            {/* Right - Illustration */}
+            {/* Right — Featured shops compact listing */}
             <motion.div
-              initial={{ opacity: 0, x: 30 }}
+              initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="hidden lg:flex items-center justify-center"
+              transition={{ duration: 0.7, delay: 0.25 }}
+              className="lg:col-span-5"
+              data-testid="featured-shops"
             >
-              <div className="w-[380px] h-[380px]">
-                <CoffeeCupIllustration />
+              <div className="bg-white border border-[#E8E3D9] rounded-lg p-5 shadow-[0_4px_24px_rgba(44,26,18,0.05)]">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="font-['Cormorant_Garamond'] text-lg font-semibold text-[#2C1A12]">Featured Shops</h2>
+                  <Link to="/map" className="text-xs text-[#B55B49] hover:underline font-medium">View all</Link>
+                </div>
+                <div>
+                  {shops.slice(0, 5).map(shop => (
+                    <FeaturedShopCard key={shop.shop_id} shop={shop} />
+                  ))}
+                  {shops.length === 0 && !loading && (
+                    <p className="text-sm text-[#6B5744]/60 py-4 text-center">Loading shops...</p>
+                  )}
+                </div>
               </div>
             </motion.div>
           </div>
 
-          {/* Stats bar */}
+          {/* Scroll down indicator */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="flex flex-wrap gap-8 sm:gap-16 mt-8 pt-8 border-t border-[#E8E3D9]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 0.6 }}
+            className="flex justify-center mt-4 pb-2"
           >
-            <div>
-              <p className="text-2xl font-['Cormorant_Garamond'] font-semibold text-[#2C1A12]">6+</p>
-              <p className="text-xs text-[#6B5744]">Curated Shops</p>
-            </div>
-            <div>
-              <p className="text-2xl font-['Cormorant_Garamond'] font-semibold text-[#2C1A12]">6</p>
-              <p className="text-xs text-[#6B5744]">Cities Covered</p>
-            </div>
-            <div>
-              <p className="text-2xl font-['Cormorant_Garamond'] font-semibold text-[#2C1A12]">4.3 - 4.9</p>
-              <p className="text-xs text-[#6B5744]">Editor Ratings</p>
-            </div>
-            <div>
-              <p className="text-2xl font-['Cormorant_Garamond'] font-semibold text-[#B55B49]">Free</p>
-              <p className="text-xs text-[#6B5744]">Always Open Access</p>
-            </div>
+            <a href="#listings" className="flex flex-col items-center gap-1 text-[#6B5744]/60 hover:text-[#B55B49] transition-colors group" data-testid="scroll-indicator">
+              <span className="text-xs font-medium tracking-wide">Scroll down for more shops</span>
+              <motion.div
+                animate={{ y: [0, 5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </motion.div>
+            </a>
           </motion.div>
         </div>
       </section>

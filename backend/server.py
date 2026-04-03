@@ -486,6 +486,101 @@ async def get_shop_ratings(shop_id: str):
     ratings = await db.ratings.find({"shop_id": shop_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
     return ratings
 
+# ---- CONTACT ENDPOINTS ----
+
+class ContactCreate(BaseModel):
+    name: str
+    email: str
+    message: str
+
+@api_router.post("/contact")
+async def submit_contact(req: ContactCreate):
+    doc = {
+        "contact_id": str(uuid.uuid4()),
+        "name": req.name,
+        "email": req.email,
+        "message": req.message,
+        "read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.contacts.insert_one(doc)
+    return {"message": "Thank you for your message. We'll get back to you soon."}
+
+@api_router.get("/contact")
+async def list_contacts(request: Request):
+    await require_admin(request)
+    contacts = await db.contacts.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return contacts
+
+@api_router.put("/contact/{contact_id}/read")
+async def mark_contact_read(contact_id: str, request: Request):
+    await require_admin(request)
+    await db.contacts.update_one({"contact_id": contact_id}, {"$set": {"read": True}})
+    return {"message": "Marked as read"}
+
+# ---- ADMIN MANAGEMENT ENDPOINTS ----
+
+class AdminCreate(BaseModel):
+    login_name: str
+    password: str
+    name: str = ""
+
+@api_router.get("/auth/admins")
+async def list_admins(request: Request):
+    await require_admin(request)
+    admins = await db.users.find({"role": "admin"}, {"_id": 0, "password_hash": 0}).to_list(50)
+    return admins
+
+@api_router.post("/auth/admins")
+async def create_admin(request: Request):
+    current_admin = await require_admin(request)
+    body = await request.json()
+    data = AdminCreate(**body)
+    
+    login_name = data.login_name.lower().strip()
+    if not login_name or not data.password:
+        raise HTTPException(status_code=400, detail="Login name and password are required")
+    
+    existing = await db.users.find_one({"email": login_name})
+    if existing:
+        raise HTTPException(status_code=409, detail="An admin with this login name already exists")
+    
+    user_id = f"admin_{uuid.uuid4().hex[:12]}"
+    hashed = hash_password(data.password)
+    await db.users.insert_one({
+        "user_id": user_id,
+        "email": login_name,
+        "password_hash": hashed,
+        "name": data.name or login_name,
+        "role": "admin",
+        "created_by": current_admin["user_id"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    new_admin = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
+    return new_admin
+
+@api_router.delete("/auth/admins/{user_id}")
+async def delete_admin(user_id: str, request: Request):
+    current_admin = await require_admin(request)
+    
+    # Prevent self-deletion
+    if current_admin["user_id"] == user_id:
+        raise HTTPException(status_code=400, detail="You cannot remove yourself")
+    
+    # Check if target is an admin
+    target = await db.users.find_one({"user_id": user_id, "role": "admin"})
+    if not target:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    
+    # Ensure at least one admin remains
+    admin_count = await db.users.count_documents({"role": "admin"})
+    if admin_count <= 1:
+        raise HTTPException(status_code=400, detail="Cannot remove the last admin")
+    
+    await db.users.delete_one({"user_id": user_id})
+    return {"message": "Admin removed"}
+
 # ---- SEED DATA ----
 
 async def seed_admin():

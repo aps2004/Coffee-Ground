@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Edit2, Trash2, Upload, X, Save, Image, MapPin, Star, Coffee, Music } from 'lucide-react';
+import { Plus, Edit2, Trash2, Upload, X, Save, Image, MapPin, Star, Coffee, Music, UserPlus, Users, Mail, Eye } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -117,6 +117,11 @@ export default function AdminDashboard() {
   const [editingShop, setEditingShop] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [uploadingFor, setUploadingFor] = useState(null);
+  const [activeTab, setActiveTab] = useState('shops');
+  const [admins, setAdmins] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [showAddAdmin, setShowAddAdmin] = useState(false);
+  const [newAdmin, setNewAdmin] = useState({ login_name: '', password: '', name: '' });
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -124,6 +129,8 @@ export default function AdminDashboard() {
       return;
     }
     fetchShops();
+    fetchAdmins();
+    fetchContacts();
   }, [user, navigate]);
 
   const fetchShops = async () => {
@@ -134,6 +141,24 @@ export default function AdminDashboard() {
       console.error('Failed to fetch shops:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAdmins = async () => {
+    try {
+      const res = await axios.get(`${API}/auth/admins`, { withCredentials: true });
+      setAdmins(res.data);
+    } catch (err) {
+      console.error('Failed to fetch admins:', err);
+    }
+  };
+
+  const fetchContacts = async () => {
+    try {
+      const res = await axios.get(`${API}/contact`, { withCredentials: true });
+      setContacts(res.data);
+    } catch (err) {
+      console.error('Failed to fetch contacts:', err);
     }
   };
 
@@ -182,111 +207,257 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleCreateAdmin = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/auth/admins`, newAdmin, { withCredentials: true });
+      setNewAdmin({ login_name: '', password: '', name: '' });
+      setShowAddAdmin(false);
+      await fetchAdmins();
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Failed to create admin');
+    }
+  };
+
+  const handleDeleteAdmin = async (userId) => {
+    if (!window.confirm('Remove this admin?')) return;
+    try {
+      await axios.delete(`${API}/auth/admins/${userId}`, { withCredentials: true });
+      await fetchAdmins();
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Failed to remove admin');
+    }
+  };
+
+  const handleMarkRead = async (contactId) => {
+    try {
+      await axios.put(`${API}/contact/${contactId}/read`, {}, { withCredentials: true });
+      await fetchContacts();
+    } catch (err) {
+      console.error('Mark read failed:', err);
+    }
+  };
+
   if (!user || user.role !== 'admin') return null;
+
+  const unreadCount = contacts.filter(c => !c.read).length;
 
   return (
     <div className="min-h-screen bg-[#FDFBF7]" data-testid="admin-dashboard">
       <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="font-['Cormorant_Garamond'] text-3xl sm:text-4xl font-light text-[#2C1A12] tracking-tight" data-testid="admin-title">
               Admin Dashboard
             </h1>
-            <p className="text-[#6B5744] text-sm mt-1">Manage your coffee shop listings</p>
+            <p className="text-[#6B5744] text-sm mt-1">Manage shops, team, and messages</p>
           </div>
-          <Button onClick={() => { setShowAddForm(true); setEditingShop(null); }} className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2" data-testid="add-shop-btn">
-            <Plus className="w-4 h-4" /> Add Shop
-          </Button>
         </div>
 
-        {/* Add Form */}
-        {showAddForm && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-[#E8E3D9] rounded-lg p-6 mb-8">
-            <h2 className="font-['Cormorant_Garamond'] text-2xl font-light text-[#2C1A12] mb-4">Add New Coffee Shop</h2>
-            <ShopForm onSave={handleCreate} onCancel={() => setShowAddForm(false)} />
-          </motion.div>
-        )}
+        {/* Tabs */}
+        <div className="flex gap-1 mb-8 border-b border-[#E8E3D9]" data-testid="admin-tabs">
+          {[
+            { key: 'shops', label: 'Shops', icon: Coffee },
+            { key: 'admins', label: 'Admins', icon: Users },
+            { key: 'messages', label: 'Messages', icon: Mail, badge: unreadCount },
+          ].map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
+                activeTab === tab.key
+                  ? 'border-[#B55B49] text-[#B55B49]'
+                  : 'border-transparent text-[#6B5744] hover:text-[#2C1A12]'
+              }`}
+              data-testid={`tab-${tab.key}`}
+            >
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
+              {tab.badge > 0 && (
+                <span className="bg-[#B55B49] text-white text-xs px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{tab.badge}</span>
+              )}
+            </button>
+          ))}
+        </div>
 
-        {/* Edit Form */}
-        {editingShop && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-[#E8E3D9] rounded-lg p-6 mb-8">
-            <h2 className="font-['Cormorant_Garamond'] text-2xl font-light text-[#2C1A12] mb-4">Edit: {editingShop.name}</h2>
-            <ShopForm shop={editingShop} onSave={handleUpdate} onCancel={() => setEditingShop(null)} />
-          </motion.div>
-        )}
+        {/* ============ SHOPS TAB ============ */}
+        {activeTab === 'shops' && (
+          <div>
+            <div className="flex justify-end mb-6">
+              <Button onClick={() => { setShowAddForm(true); setEditingShop(null); }} className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2" data-testid="add-shop-btn">
+                <Plus className="w-4 h-4" /> Add Shop
+              </Button>
+            </div>
 
-        {/* Shop List */}
-        {loading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => <div key={i} className="bg-[#E8E3D9]/40 animate-pulse rounded h-32" />)}
-          </div>
-        ) : shops.length === 0 ? (
-          <div className="text-center py-20">
-            <Coffee className="w-12 h-12 text-[#D4B996] mx-auto mb-4" />
-            <p className="text-[#6B5744]">No coffee shops yet. Add your first listing!</p>
-          </div>
-        ) : (
-          <div className="space-y-4" data-testid="admin-shop-list">
-            {shops.map(shop => (
-              <div key={shop.shop_id} className="bg-white border border-[#E8E3D9] rounded-lg p-5" data-testid={`admin-shop-${shop.shop_id}`}>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="font-medium text-[#2C1A12] text-lg">{shop.name}</h3>
-                      <Badge variant="secondary" className="bg-[#E8E3D9] text-[#6B5744] text-xs">
-                        <MapPin className="w-3 h-3 mr-1" /> {shop.city}
-                      </Badge>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-3 h-3 text-[#D4B996] fill-[#D4B996]" />
-                        <span className="text-sm text-[#2C1A12]">{shop.admin_rating}</span>
+            {showAddForm && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-[#E8E3D9] rounded-lg p-6 mb-8">
+                <h2 className="font-['Cormorant_Garamond'] text-2xl font-light text-[#2C1A12] mb-4">Add New Coffee Shop</h2>
+                <ShopForm onSave={handleCreate} onCancel={() => setShowAddForm(false)} />
+              </motion.div>
+            )}
+
+            {editingShop && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-[#E8E3D9] rounded-lg p-6 mb-8">
+                <h2 className="font-['Cormorant_Garamond'] text-2xl font-light text-[#2C1A12] mb-4">Edit: {editingShop.name}</h2>
+                <ShopForm shop={editingShop} onSave={handleUpdate} onCancel={() => setEditingShop(null)} />
+              </motion.div>
+            )}
+
+            {loading ? (
+              <div className="space-y-4">{[1, 2, 3].map(i => <div key={i} className="bg-[#E8E3D9]/40 animate-pulse rounded h-32" />)}</div>
+            ) : shops.length === 0 ? (
+              <div className="text-center py-20">
+                <Coffee className="w-12 h-12 text-[#D4B996] mx-auto mb-4" />
+                <p className="text-[#6B5744]">No coffee shops yet. Add your first listing!</p>
+              </div>
+            ) : (
+              <div className="space-y-4" data-testid="admin-shop-list">
+                {shops.map(shop => (
+                  <div key={shop.shop_id} className="bg-white border border-[#E8E3D9] rounded-lg p-5" data-testid={`admin-shop-${shop.shop_id}`}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1">
+                          <h3 className="font-medium text-[#2C1A12] text-lg">{shop.name}</h3>
+                          <Badge variant="secondary" className="bg-[#E8E3D9] text-[#6B5744] text-xs">
+                            <MapPin className="w-3 h-3 mr-1" /> {shop.city}
+                          </Badge>
+                          <div className="flex items-center gap-1">
+                            <Star className="w-3 h-3 text-[#D4B996] fill-[#D4B996]" />
+                            <span className="text-sm text-[#2C1A12]">{shop.admin_rating}</span>
+                          </div>
+                          {shop.playlist_url && (
+                            <Badge variant="secondary" className="bg-[#B55B49]/10 text-[#B55B49] text-xs">
+                              <Music className="w-3 h-3 mr-1" /> Playlist
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[#6B5744] text-sm line-clamp-2">{shop.description}</p>
+                        <div className="flex items-center gap-2 mt-3 flex-wrap">
+                          {shop.images?.map(img => (
+                            <div key={img.image_id} className="relative group w-16 h-16 rounded overflow-hidden border border-[#E8E3D9]">
+                              <img src={`${API}/files/${img.storage_path}`} alt="" className="w-full h-full object-cover" />
+                              <button onClick={() => handleImageDelete(shop.shop_id, img.image_id)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center" data-testid={`delete-image-${img.image_id}`}>
+                                <X className="w-4 h-4 text-white" />
+                              </button>
+                            </div>
+                          ))}
+                          <label className="w-16 h-16 rounded border-2 border-dashed border-[#E8E3D9] flex items-center justify-center cursor-pointer hover:border-[#B55B49] transition-colors" data-testid={`upload-image-${shop.shop_id}`}>
+                            <Upload className="w-5 h-5 text-[#6B5744]" />
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files[0]) handleImageUpload(shop.shop_id, e.target.files[0]); }} />
+                          </label>
+                        </div>
                       </div>
-                      {shop.playlist_url && (
-                        <Badge variant="secondary" className="bg-[#B55B49]/10 text-[#B55B49] text-xs">
-                          <Music className="w-3 h-3 mr-1" /> Playlist
-                        </Badge>
+                      <div className="flex gap-2 ml-4 shrink-0">
+                        <Button size="sm" variant="outline" onClick={() => { setEditingShop(shop); setShowAddForm(false); }} className="border-[#E8E3D9] text-[#6B5744] hover:bg-[#E8E3D9] gap-1" data-testid={`edit-shop-${shop.shop_id}`}>
+                          <Edit2 className="w-3 h-3" /> Edit
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleDelete(shop.shop_id)} className="border-red-200 text-red-600 hover:bg-red-50 gap-1" data-testid={`delete-shop-${shop.shop_id}`}>
+                          <Trash2 className="w-3 h-3" /> Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ============ ADMINS TAB ============ */}
+        {activeTab === 'admins' && (
+          <div data-testid="admins-section">
+            <div className="flex items-center justify-between mb-6">
+              <p className="text-[#6B5744] text-sm">{admins.length} admin{admins.length !== 1 ? 's' : ''} registered</p>
+              <Button onClick={() => setShowAddAdmin(true)} className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2" data-testid="add-admin-btn">
+                <UserPlus className="w-4 h-4" /> Add Admin
+              </Button>
+            </div>
+
+            {showAddAdmin && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-[#E8E3D9] rounded-lg p-6 mb-6">
+                <h3 className="font-['Cormorant_Garamond'] text-xl text-[#2C1A12] mb-4">Add New Admin</h3>
+                <form onSubmit={handleCreateAdmin} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-[#2C1A12] text-sm">Login Name *</Label>
+                    <Input value={newAdmin.login_name} onChange={(e) => setNewAdmin({ ...newAdmin, login_name: e.target.value })} required className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]" data-testid="new-admin-login" />
+                  </div>
+                  <div>
+                    <Label className="text-[#2C1A12] text-sm">Display Name</Label>
+                    <Input value={newAdmin.name} onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })} className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]" data-testid="new-admin-name" />
+                  </div>
+                  <div>
+                    <Label className="text-[#2C1A12] text-sm">Password *</Label>
+                    <Input type="password" value={newAdmin.password} onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })} required className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]" data-testid="new-admin-password" />
+                  </div>
+                  <div className="sm:col-span-3 flex gap-3">
+                    <Button type="submit" className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2" data-testid="save-admin-btn">
+                      <Save className="w-4 h-4" /> Create Admin
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => setShowAddAdmin(false)} className="border-[#E8E3D9] text-[#6B5744]">Cancel</Button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+
+            <div className="space-y-3">
+              {admins.map(admin => (
+                <div key={admin.user_id} className="bg-white border border-[#E8E3D9] rounded-lg p-4 flex items-center justify-between" data-testid={`admin-user-${admin.user_id}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#D4B996]/30 flex items-center justify-center text-[#2C1A12] font-medium text-sm">
+                      {(admin.name || admin.email || 'A')[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[#2C1A12]">{admin.name || admin.email}</p>
+                      <p className="text-xs text-[#6B5744]">Login: {admin.email}</p>
+                    </div>
+                  </div>
+                  {admin.user_id !== user.user_id && (
+                    <Button size="sm" variant="outline" onClick={() => handleDeleteAdmin(admin.user_id)} className="border-red-200 text-red-600 hover:bg-red-50 gap-1" data-testid={`remove-admin-${admin.user_id}`}>
+                      <Trash2 className="w-3 h-3" /> Remove
+                    </Button>
+                  )}
+                  {admin.user_id === user.user_id && (
+                    <Badge variant="secondary" className="bg-[#E8E3D9] text-[#6B5744] text-xs">You</Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ============ MESSAGES TAB ============ */}
+        {activeTab === 'messages' && (
+          <div data-testid="messages-section">
+            <p className="text-[#6B5744] text-sm mb-6">{contacts.length} message{contacts.length !== 1 ? 's' : ''}{unreadCount > 0 ? ` (${unreadCount} unread)` : ''}</p>
+            {contacts.length === 0 ? (
+              <div className="text-center py-16">
+                <Mail className="w-12 h-12 text-[#D4B996] mx-auto mb-4" />
+                <p className="text-[#6B5744]">No messages yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {contacts.map(msg => (
+                  <div key={msg.contact_id} className={`bg-white border rounded-lg p-5 ${msg.read ? 'border-[#E8E3D9]' : 'border-[#B55B49]/30 bg-[#B55B49]/[0.02]'}`} data-testid={`message-${msg.contact_id}`}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-sm font-medium text-[#2C1A12]">{msg.name}</p>
+                          <span className="text-xs text-[#6B5744]">&lt;{msg.email}&gt;</span>
+                          {!msg.read && <span className="w-2 h-2 rounded-full bg-[#B55B49]" />}
+                        </div>
+                        <p className="text-[#2C1A12]/80 text-sm leading-relaxed">{msg.message}</p>
+                        <p className="text-xs text-[#6B5744]/50 mt-2">{new Date(msg.created_at).toLocaleString()}</p>
+                      </div>
+                      {!msg.read && (
+                        <Button size="sm" variant="outline" onClick={() => handleMarkRead(msg.contact_id)} className="border-[#E8E3D9] text-[#6B5744] hover:bg-[#E8E3D9] gap-1 shrink-0 ml-4" data-testid={`mark-read-${msg.contact_id}`}>
+                          <Eye className="w-3 h-3" /> Mark Read
+                        </Button>
                       )}
                     </div>
-                    <p className="text-[#6B5744] text-sm line-clamp-2">{shop.description}</p>
-
-                    {/* Images */}
-                    <div className="flex items-center gap-2 mt-3 flex-wrap">
-                      {shop.images?.map(img => (
-                        <div key={img.image_id} className="relative group w-16 h-16 rounded overflow-hidden border border-[#E8E3D9]">
-                          <img src={`${API}/files/${img.storage_path}`} alt="" className="w-full h-full object-cover" />
-                          <button
-                            onClick={() => handleImageDelete(shop.shop_id, img.image_id)}
-                            className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                            data-testid={`delete-image-${img.image_id}`}
-                          >
-                            <X className="w-4 h-4 text-white" />
-                          </button>
-                        </div>
-                      ))}
-                      <label className="w-16 h-16 rounded border-2 border-dashed border-[#E8E3D9] flex items-center justify-center cursor-pointer hover:border-[#B55B49] transition-colors" data-testid={`upload-image-${shop.shop_id}`}>
-                        <Upload className="w-5 h-5 text-[#6B5744]" />
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            if (e.target.files[0]) handleImageUpload(shop.shop_id, e.target.files[0]);
-                          }}
-                        />
-                      </label>
-                    </div>
                   </div>
-
-                  <div className="flex gap-2 ml-4 shrink-0">
-                    <Button size="sm" variant="outline" onClick={() => { setEditingShop(shop); setShowAddForm(false); }} className="border-[#E8E3D9] text-[#6B5744] hover:bg-[#E8E3D9] gap-1" data-testid={`edit-shop-${shop.shop_id}`}>
-                      <Edit2 className="w-3 h-3" /> Edit
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleDelete(shop.shop_id)} className="border-red-200 text-red-600 hover:bg-red-50 gap-1" data-testid={`delete-shop-${shop.shop_id}`}>
-                      <Trash2 className="w-3 h-3" /> Delete
-                    </Button>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>

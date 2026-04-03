@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Coffee, Map, User, LogOut, Settings, Menu, X } from 'lucide-react';
+import { Coffee, MapPin, User, LogOut, Settings, Menu, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -16,64 +16,42 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isHome = location.pathname === '/';
-  const isTransparent = isHome;
 
   const handleGoogleLogin = () => {
-    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
     const redirectUrl = window.location.origin + '/';
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
+  const navLinkClass = (path) =>
+    `text-sm font-medium transition-colors ${
+      location.pathname === path ? 'text-[#B55B49]' : 'text-[#2C1A12] hover:text-[#B55B49]'
+    }`;
+
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isTransparent
-          ? 'bg-[#FDFBF7]/80 backdrop-blur-xl border-b border-[#E8E3D9]/50'
-          : 'bg-[#FDFBF7]/95 backdrop-blur-xl border-b border-[#E8E3D9]'
-      }`}
+      className="fixed top-0 left-0 right-0 z-50 bg-[#FDFBF7]/95 backdrop-blur-xl border-b border-[#E8E3D9]"
       data-testid="navbar"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group" data-testid="nav-logo">
-            <Coffee className="w-6 h-6 text-[#B55B49] group-hover:rotate-12 transition-transform" />
-            <span className="font-['Cormorant_Garamond'] text-xl font-semibold text-[#2C1A12] tracking-tight">
-              Coffee Grounds
-            </span>
-          </Link>
-
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-6">
-            <Link
-              to="/"
-              className={`text-sm font-medium transition-colors ${
-                location.pathname === '/' ? 'text-[#B55B49]' : 'text-[#6B5744] hover:text-[#2C1A12]'
-              }`}
-              data-testid="nav-home"
-            >
+        <div className="flex items-center justify-between h-14">
+          {/* Left — Navigation Links */}
+          <div className="hidden md:flex items-center gap-7">
+            <Link to="/" className={navLinkClass('/')} data-testid="nav-home">
               Home
             </Link>
-            <Link
-              to="/cukp"
-              className={`text-sm font-medium transition-colors ${
-                location.pathname === '/cukp' ? 'text-[#B55B49]' : 'text-[#6B5744] hover:text-[#2C1A12]'
-              }`}
-              data-testid="nav-cukp"
-            >
-              CUKP
+            <Link to="/map" className={`${navLinkClass('/map')} flex items-center gap-1.5`} data-testid="nav-cafe">
+              <MapPin className="w-3.5 h-3.5" /> Cafe
             </Link>
-            <Link
-              to="/map"
-              className={`text-sm font-medium transition-colors flex items-center gap-1 ${
-                location.pathname === '/map' ? 'text-[#B55B49]' : 'text-[#6B5744] hover:text-[#2C1A12]'
-              }`}
-              data-testid="nav-map"
-            >
-              <Map className="w-4 h-4" /> Map
+            <Link to="/cukp" className={navLinkClass('/cukp')} data-testid="nav-about">
+              About
             </Link>
+            <Link to="/contact" className={navLinkClass('/contact')} data-testid="nav-contact">
+              Contact Us
+            </Link>
+          </div>
 
+          {/* Right — Auth */}
+          <div className="hidden md:flex items-center gap-3 ml-auto">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -84,7 +62,7 @@ export default function Navbar() {
                         {(user.name || user.email || 'U')[0].toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm text-[#2C1A12] font-medium hidden lg:inline">{user.name || user.email}</span>
+                    <span className="text-sm text-[#2C1A12] font-medium">{user.name || user.email}</span>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-white border-[#E8E3D9] w-48">
@@ -106,21 +84,14 @@ export default function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="flex items-center gap-3">
-                <Link to="/admin/login" data-testid="nav-admin-login">
-                  <Button variant="ghost" size="sm" className="text-[#6B5744] hover:text-[#2C1A12] hover:bg-[#E8E3D9]">
-                    Admin
-                  </Button>
-                </Link>
-                <Button
-                  onClick={handleGoogleLogin}
-                  size="sm"
-                  className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2"
-                  data-testid="nav-google-login-btn"
-                >
-                  <User className="w-4 h-4" /> Sign In
-                </Button>
-              </div>
+              <Button
+                onClick={handleGoogleLogin}
+                size="sm"
+                className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2"
+                data-testid="nav-google-login-btn"
+              >
+                <User className="w-4 h-4" /> Sign In
+              </Button>
             )}
           </div>
 
@@ -141,11 +112,14 @@ export default function Navbar() {
             <Link to="/" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
               Home
             </Link>
-            <Link to="/cukp" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
-              CUKP
+            <Link to="/map" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5" /> Cafe
             </Link>
-            <Link to="/map" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
-              Map View
+            <Link to="/cukp" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
+              About
+            </Link>
+            <Link to="/contact" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
+              Contact Us
             </Link>
             {user ? (
               <>
@@ -160,14 +134,9 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <>
-                <Link to="/admin/login" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
-                  Admin Login
-                </Link>
-                <button onClick={handleGoogleLogin} className="text-sm font-medium text-[#B55B49] py-1">
-                  Sign In with Google
-                </button>
-              </>
+              <button onClick={handleGoogleLogin} className="text-sm font-medium text-[#B55B49] py-1">
+                Sign In with Google
+              </button>
             )}
           </div>
         )}
