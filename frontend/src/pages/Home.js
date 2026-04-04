@@ -14,9 +14,9 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const PLACEHOLDER_IMAGES = [
   "https://customer-assets.emergentagent.com/job_espresso-explorer/artifacts/cuhz3i1s_AbhishekX_Japanes_Coffee_shop_image_in_the_style_of_Sydmead_-_d4ebf1fe-b331-4268-940e-b9d3ee20830e_2.png",
   "https://customer-assets.emergentagent.com/job_espresso-explorer/artifacts/ollla97v_AbhishekX_close_up_of_people_making_coffee_with_aeropress_--v_78ccb6f4-05a9-4c44-a519-e1a2e0d0d086_1.png",
+  "https://customer-assets.emergentagent.com/job_espresso-explorer/artifacts/0u1o8ppf_AbhishekX_British_Cafe_in_Sydmead_style_of_illustration_--v_7_bdf3fdff-787f-4f9a-802f-9f4e6e3b2c51_2.png",
   "https://customer-assets.emergentagent.com/job_espresso-explorer/artifacts/x2zf8kmq_AbhishekX_Closeup_of_people_in_sydmead_style_who_are_making_c_5314aedf-4187-4e46-809e-fa933cf025bf_1.png",
-  "https://customer-assets.emergentagent.com/job_espresso-explorer/artifacts/ollla97v_AbhishekX_close_up_of_people_making_coffee_with_aeropress_--v_78ccb6f4-05a9-4c44-a519-e1a2e0d0d086_1.png",
-  "https://customer-assets.emergentagent.com/job_espresso-explorer/artifacts/x2zf8kmq_AbhishekX_Closeup_of_people_in_sydmead_style_who_are_making_c_5314aedf-4187-4e46-809e-fa933cf025bf_1.png"
+  "https://customer-assets.emergentagent.com/job_espresso-explorer/artifacts/2i1zvaq7_AbhishekX_British_Cafe_in_Sydmead_style_of_illustration_--v_7_bdf3fdff-787f-4f9a-802f-9f4e6e3b2c51_1.png"
 ];
 
 export default function Home() {
