@@ -12,11 +12,11 @@ import ShopCard from '../components/ShopCard';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const PLACEHOLDER_IMAGES = [
-  "https://images.unsplash.com/photo-1738327264976-fa0b8d9af52c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwzfHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
-  "https://images.unsplash.com/photo-1545399885-fd918e63002f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwxfHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
-  "https://images.unsplash.com/photo-1588591741887-802be52c1171?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHw0fHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
-  "https://images.unsplash.com/photo-1738327264238-ec102a3c626a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwyfHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
-  "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHw1fHxjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85"
+  "https://customer-assets.emergentagent.com/job_espresso-explorer/artifacts/cuhz3i1s_AbhishekX_Japanes_Coffee_shop_image_in_the_style_of_Sydmead_-_d4ebf1fe-b331-4268-940e-b9d3ee20830e_2.png",
+  "https://customer-assets.emergentagent.com/job_espresso-explorer/artifacts/ollla97v_AbhishekX_close_up_of_people_making_coffee_with_aeropress_--v_78ccb6f4-05a9-4c44-a519-e1a2e0d0d086_1.png",
+  "https://customer-assets.emergentagent.com/job_espresso-explorer/artifacts/x2zf8kmq_AbhishekX_Closeup_of_people_in_sydmead_style_who_are_making_c_5314aedf-4187-4e46-809e-fa933cf025bf_1.png",
+  "https://customer-assets.emergentagent.com/job_espresso-explorer/artifacts/ollla97v_AbhishekX_close_up_of_people_making_coffee_with_aeropress_--v_78ccb6f4-05a9-4c44-a519-e1a2e0d0d086_1.png",
+  "https://customer-assets.emergentagent.com/job_espresso-explorer/artifacts/x2zf8kmq_AbhishekX_Closeup_of_people_in_sydmead_style_who_are_making_c_5314aedf-4187-4e46-809e-fa933cf025bf_1.png"
 ];
 
 export default function Home() {
