@@ -62,8 +62,9 @@ export default function Home() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-[#D4B996]/8 -translate-y-1/2 translate-x-1/4" />
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-[#B55B49]/5 translate-y-1/3 -translate-x-1/4" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-4 sm:pt-8 pb-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start min-h-[65vh]">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 flex flex-col" style={{ minHeight: 'calc(100vh - 3.5rem)' }}>
+          {/* Main hero content area — grows to fill */}
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start pt-4 sm:pt-6">
             {/* Left — Main content */}
             <div className="lg:col-span-5">
               <motion.div
@@ -72,16 +73,16 @@ export default function Home() {
                 transition={{ duration: 0.7 }}
               >
                 <h1
-                  className="font-['Cormorant_Garamond'] text-7xl sm:text-8xl lg:text-[7.5rem] font-light text-[#2C1A12] tracking-tight leading-[0.95] mb-5"
+                  className="font-['Cormorant_Garamond'] text-6xl sm:text-7xl lg:text-[7rem] font-light text-[#2C1A12] tracking-tight leading-[0.95] mb-4"
                   data-testid="hero-title"
                 >
                   Coffee<br />
                   <span className="italic font-normal">Grounds</span>
                 </h1>
-                <p className="text-[#6B5744] text-base sm:text-lg max-w-md mb-6 leading-relaxed">
+                <p className="text-[#6B5744] text-base sm:text-lg max-w-md mb-5 leading-relaxed">
                   Best Cafes and Coffee in the UK
                 </p>
-                <p className="text-[#6B5744]/70 text-sm max-w-sm mb-8 leading-relaxed">
+                <p className="text-[#6B5744]/70 text-sm max-w-sm mb-7 leading-relaxed">
                   A curated guide to the most exceptional coffee shops across the United Kingdom, handpicked by our editors.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -99,7 +100,7 @@ export default function Home() {
               </motion.div>
             </div>
 
-            {/* Right — Featured coffee shop card (compact) */}
+            {/* Right — Spotlight section with featured card */}
             {featured && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
@@ -108,15 +109,20 @@ export default function Home() {
                 className="lg:col-span-7"
                 data-testid="featured-shop-card"
               >
-                <div className="relative bg-white border border-[#E8E3D9] rounded-lg overflow-hidden shadow-[0_8px_40px_rgba(44,26,18,0.07)] max-w-lg lg:max-w-none lg:ml-auto">
+                {/* Spotlight heading */}
+                <h2 className="font-['Cormorant_Garamond'] text-2xl sm:text-3xl font-light text-[#2C1A12] tracking-tight mb-3" data-testid="spotlight-heading">
+                  Spotlight
+                </h2>
+
+                <div className="relative bg-white border border-[#E8E3D9] rounded-lg overflow-hidden shadow-[0_8px_40px_rgba(44,26,18,0.07)]">
                   {/* Featured flag — top left cream badge */}
                   <div className="absolute top-3 left-3 z-10" data-testid="featured-flag">
                     <span className="bg-[#F5F0E8] text-[#6B5744] text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded shadow-sm border border-[#E8E3D9]/60">
                       Featured
                     </span>
                   </div>
-                  {/* Thumbnails row — smaller height, slow zoom on hover */}
-                  <div className="grid grid-cols-12 gap-[3px] h-40 bg-[#E8E3D9]">
+                  {/* Thumbnails — slow zoom on hover */}
+                  <div className="grid grid-cols-12 gap-[3px] h-36 sm:h-40 bg-[#E8E3D9]">
                     <div className="col-span-7 overflow-hidden">
                       <img src={featuredImages[0]} alt={featured.name} className="w-full h-full object-cover transition-transform duration-[2000ms] ease-out hover:scale-110" />
                     </div>
@@ -129,57 +135,64 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                  {/* Card content — tighter padding */}
+                  {/* Card content */}
                   <div className="p-5">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <div className="flex items-center gap-1 bg-[#E8E3D9]/60 px-2 py-0.5 rounded">
-                        <Star className="w-3.5 h-3.5 text-[#D4B996] fill-[#D4B996]" />
-                        <span className="text-sm font-semibold text-[#2C1A12]">{featuredRating}</span>
-                      </div>
+                    {/* Rating */}
+                    <div className="flex items-center gap-1 mb-2">
+                      <Star className="w-4 h-4 text-[#D4B996] fill-[#D4B996]" />
+                      <span className="text-sm font-semibold text-[#2C1A12]">{featuredRating}</span>
+                      {featured.rating_count > 0 && (
+                        <span className="text-xs text-[#6B5744]">({featured.rating_count} reviews)</span>
+                      )}
                     </div>
-                    <h2 className="font-['Cormorant_Garamond'] text-xl sm:text-2xl font-semibold text-[#2C1A12] tracking-tight mb-1" data-testid="featured-shop-name">
+                    {/* Shop name — large and prominent */}
+                    <h3 className="font-['Cormorant_Garamond'] text-2xl sm:text-3xl font-semibold text-[#2C1A12] tracking-tight leading-tight mb-1" data-testid="featured-shop-name">
                       {featured.name}
-                    </h2>
+                    </h3>
                     <p className="text-[#6B5744] text-xs flex items-center gap-1 mb-3">
                       <MapPin className="w-3 h-3" /> {featured.city}{featured.address ? ` — ${featured.address}` : ''}
                     </p>
-                    <p className="text-[#2C1A12]/70 text-sm leading-relaxed line-clamp-2 mb-4" data-testid="featured-shop-desc">
+                    {/* Write-up */}
+                    <p className="text-[#2C1A12]/75 text-sm leading-relaxed mb-4" data-testid="featured-shop-desc">
                       {featured.description}
                     </p>
-                    {featured.tags?.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {featured.tags.slice(0, 3).map(tag => (
-                          <Badge key={tag} variant="secondary" className="bg-[#E8E3D9]/60 text-[#6B5744] text-xs px-2 py-0">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                    <Link to={`/shop/${featured.shop_id}`} data-testid="featured-more-btn">
-                      <Button size="sm" className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2 font-medium">
-                        More <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    </Link>
+                    {/* Tags + More button */}
+                    <div className="flex items-center justify-between gap-4">
+                      {featured.tags?.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {featured.tags.slice(0, 3).map(tag => (
+                            <Badge key={tag} variant="secondary" className="bg-[#E8E3D9]/60 text-[#6B5744] text-xs px-2 py-0">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      <Link to={`/shop/${featured.shop_id}`} data-testid="featured-more-btn" className="shrink-0">
+                        <Button className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2 font-medium px-6">
+                          More <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </motion.div>
             )}
           </div>
 
-          {/* Scroll down indicator */}
+          {/* Scroll down indicator — pinned to bottom of viewport fold */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 0.6 }}
-            className="flex justify-center mt-6 pb-2"
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="py-4 flex justify-center shrink-0"
           >
-            <a href="#listings" className="flex flex-col items-center gap-1 text-[#6B5744]/60 hover:text-[#B55B49] transition-colors group" data-testid="scroll-indicator">
-              <span className="text-xs font-medium tracking-wide">Scroll down for more shops</span>
+            <a href="#listings" className="flex flex-col items-center gap-1.5 text-[#6B5744] hover:text-[#B55B49] transition-colors" data-testid="scroll-indicator">
+              <span className="text-sm font-medium tracking-wide">Scroll down for more shops</span>
               <motion.div
-                animate={{ y: [0, 5, 0] }}
+                animate={{ y: [0, 6, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
-                <ChevronDown className="w-4 h-4" />
+                <ChevronDown className="w-5 h-5" />
               </motion.div>
             </a>
           </motion.div>
