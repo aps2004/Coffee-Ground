@@ -130,7 +130,7 @@ export default function Home() {
                     </span>
                   </div>
                   {/* Image collage — 4+ images, very slow zoom on hover (4s) */}
-                  <div className="grid grid-cols-12 grid-rows-2 gap-[3px] h-44 sm:h-52 bg-[#E8E3D9]">
+                  <div className="grid grid-cols-12 grid-rows-2 gap-[3px] h-64 sm:h-80 bg-[#E8E3D9]">
                     <div className="col-span-6 row-span-2 overflow-hidden">
                       <img src={featuredImages[0]} alt={featured.name} className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
                     </div>
