@@ -934,12 +934,18 @@ async def seed_sample_articles():
     ]
 
     articles = []
+    cover_images = {
+        "The V60 Pour-Over: A Ritual Worth Mastering": "https://images.unsplash.com/photo-1559648617-374af4ae6c2b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODh8MHwxfHNlYXJjaHwxfHxWNjAlMjBwb3VyJTIwb3ZlciUyMGNvZmZlZSUyMGJyZXdpbmd8ZW58MHx8fHwxNzc1MzA1NTk1fDA&ixlib=rb-4.1.0&q=85",
+        "La Marzocco Linea Mini: The Home Espresso Revolution": "https://images.unsplash.com/photo-1582572426223-d152057ba012?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwyfHxMYSUyME1hcnpvY2NvJTIwZXNwcmVzc28lMjBtYWNoaW5lfGVufDB8fHx8MTc3NTMwNTU5NXww&ixlib=rb-4.1.0&q=85",
+        "Maxwell Colonna-Dashwood: The Scientist Behind the Cup": "https://images.unsplash.com/photo-1551815105-e2fd6848e665?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjh8MHwxfHNlYXJjaHwyfHxiYXJpc3RhJTIwY3VwcGluZyUyMGNvZmZlZSUyMHRhc3RpbmclMjBwcm9mZXNzaW9uYWx8ZW58MHx8fHwxNzc1MzA1NjA2fDA&ixlib=rb-4.1.0&q=85",
+        "Cold Brew vs Iced Pour-Over: The Summer Showdown": "https://images.unsplash.com/photo-1770326965745-079ca2abbc06?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjV8MHwxfHNlYXJjaHwxfHxjb2xkJTIwYnJldyUyMGljZWQlMjBjb2ZmZWUlMjBwcmVwYXJhdGlvbnxlbnwwfHx8fDE3NzUzMDU1OTV8MA&ixlib=rb-4.1.0&q=85",
+    }
     for raw in raw_articles:
         articles.append({
             "article_id": f"art_{uuid.uuid4().hex[:12]}",
             **raw,
             "content": _sections_to_html(raw["sections"]),
-            "cover_image": "",
+            "cover_image": cover_images.get(raw["title"], ""),
             "author_image": "",
             "published": True,
             "created_by": "system",

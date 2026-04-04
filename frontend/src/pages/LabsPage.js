@@ -117,7 +117,7 @@ export default function LabsPage() {
                     {/* Cover image */}
                     {article.cover_image ? (
                       <div className="h-48 overflow-hidden bg-[#E8E3D9]">
-                        <img src={`${API}/files/${article.cover_image}`} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                        <img src={article.cover_image.startsWith('http') ? article.cover_image : `${API}/files/${article.cover_image}`} alt={article.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                       </div>
                     ) : (
                       <div className="h-48 bg-gradient-to-br from-[#E8E3D9] to-[#D4B996]/30 flex items-center justify-center">

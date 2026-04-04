@@ -127,7 +127,7 @@ export default function ArticleDetail() {
         <div className="max-w-4xl mx-auto px-4 sm:px-8 mb-10">
           <div className="rounded-lg overflow-hidden border border-[#E8E3D9]">
             <img
-              src={`${API}/files/${article.cover_image}`}
+              src={article.cover_image.startsWith('http') ? article.cover_image : `${API}/files/${article.cover_image}`}
               alt={article.title}
               className="w-full h-auto max-h-[480px] object-cover"
               data-testid="article-cover-image"
