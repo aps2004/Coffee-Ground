@@ -14,7 +14,9 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const PLACEHOLDER_IMAGES = [
   "https://images.unsplash.com/photo-1738327264976-fa0b8d9af52c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwzfHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
   "https://images.unsplash.com/photo-1545399885-fd918e63002f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwxfHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
-  "https://images.unsplash.com/photo-1588591741887-802be52c1171?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHw0fHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85"
+  "https://images.unsplash.com/photo-1588591741887-802be52c1171?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHw0fHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
+  "https://images.unsplash.com/photo-1738327264238-ec102a3c626a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHwyfHxjb3p5JTIwVUslMjBjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85",
+  "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTJ8MHwxfHNlYXJjaHw1fHxjb2ZmZWUlMjBzaG9wJTIwaW50ZXJpb3J8ZW58MHx8fHwxNzc1MjMwNjk2fDA&ixlib=rb-4.1.0&q=85"
 ];
 
 export default function Home() {
@@ -109,10 +111,16 @@ export default function Home() {
                 className="lg:col-span-7"
                 data-testid="featured-shop-card"
               >
-                {/* Spotlight heading */}
-                <h2 className="font-['Cormorant_Garamond'] text-2xl sm:text-3xl font-light text-[#2C1A12] tracking-tight mb-3" data-testid="spotlight-heading">
-                  Spotlight
-                </h2>
+                {/* Spotlight heading + shop name on the same line */}
+                <div className="flex items-baseline gap-3 mb-3" data-testid="spotlight-heading">
+                  <h2 className="font-['Cormorant_Garamond'] text-2xl sm:text-3xl font-light text-[#2C1A12] tracking-tight shrink-0">
+                    Spotlight
+                  </h2>
+                  <span className="text-[#6B5744]/40 text-lg font-light">/</span>
+                  <h3 className="font-['Cormorant_Garamond'] text-xl sm:text-2xl font-semibold text-[#B55B49] tracking-tight truncate" data-testid="featured-shop-name">
+                    {featured.name}
+                  </h3>
+                </div>
 
                 <div className="relative bg-white border border-[#E8E3D9] rounded-lg overflow-hidden shadow-[0_8px_40px_rgba(44,26,18,0.07)]">
                   {/* Featured flag — top left cream badge */}
@@ -121,58 +129,41 @@ export default function Home() {
                       Featured
                     </span>
                   </div>
-                  {/* Thumbnails — slow zoom on hover */}
-                  <div className="grid grid-cols-12 gap-[3px] h-36 sm:h-40 bg-[#E8E3D9]">
-                    <div className="col-span-7 overflow-hidden">
-                      <img src={featuredImages[0]} alt={featured.name} className="w-full h-full object-cover transition-transform duration-[2000ms] ease-out hover:scale-110" />
+                  {/* Image collage — 4+ images, very slow zoom on hover (4s) */}
+                  <div className="grid grid-cols-12 grid-rows-2 gap-[3px] h-44 sm:h-52 bg-[#E8E3D9]">
+                    <div className="col-span-6 row-span-2 overflow-hidden">
+                      <img src={featuredImages[0]} alt={featured.name} className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
                     </div>
-                    <div className="col-span-5 grid grid-rows-2 gap-[3px]">
-                      <div className="overflow-hidden">
-                        <img src={featuredImages[1] || featuredImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-[2000ms] ease-out hover:scale-110" />
-                      </div>
-                      <div className="overflow-hidden">
-                        <img src={featuredImages[2] || featuredImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-[2000ms] ease-out hover:scale-110" />
-                      </div>
+                    <div className="col-span-3 row-span-1 overflow-hidden">
+                      <img src={featuredImages[1] || featuredImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
+                    </div>
+                    <div className="col-span-3 row-span-1 overflow-hidden">
+                      <img src={featuredImages[2] || featuredImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
+                    </div>
+                    <div className="col-span-3 row-span-1 overflow-hidden">
+                      <img src={featuredImages[3] || featuredImages[1] || featuredImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
+                    </div>
+                    <div className="col-span-3 row-span-1 overflow-hidden">
+                      <img src={featuredImages[4] || featuredImages[2] || featuredImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
                     </div>
                   </div>
-                  {/* Card content */}
-                  <div className="p-5">
-                    {/* Rating */}
-                    <div className="flex items-center gap-1 mb-2">
-                      <Star className="w-4 h-4 text-[#D4B996] fill-[#D4B996]" />
+                  {/* Footer strip — blurb with "....more" hyperlink */}
+                  <div className="px-5 py-3.5 border-t border-[#E8E3D9] bg-white flex items-center gap-3" data-testid="featured-card-footer">
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Star className="w-3.5 h-3.5 text-[#D4B996] fill-[#D4B996]" />
                       <span className="text-sm font-semibold text-[#2C1A12]">{featuredRating}</span>
-                      {featured.rating_count > 0 && (
-                        <span className="text-xs text-[#6B5744]">({featured.rating_count} reviews)</span>
-                      )}
                     </div>
-                    {/* Shop name — large and prominent */}
-                    <h3 className="font-['Cormorant_Garamond'] text-2xl sm:text-3xl font-semibold text-[#2C1A12] tracking-tight leading-tight mb-1" data-testid="featured-shop-name">
-                      {featured.name}
-                    </h3>
-                    <p className="text-[#6B5744] text-xs flex items-center gap-1 mb-3">
-                      <MapPin className="w-3 h-3" /> {featured.city}{featured.address ? ` — ${featured.address}` : ''}
+                    <span className="text-[#E8E3D9]">|</span>
+                    <p className="text-[#2C1A12]/70 text-sm leading-snug flex-1 truncate" data-testid="featured-shop-desc">
+                      {featured.description}....
                     </p>
-                    {/* Write-up */}
-                    <p className="text-[#2C1A12]/75 text-sm leading-relaxed mb-4" data-testid="featured-shop-desc">
-                      {featured.description}
-                    </p>
-                    {/* Tags + More button */}
-                    <div className="flex items-center justify-between gap-4">
-                      {featured.tags?.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
-                          {featured.tags.slice(0, 3).map(tag => (
-                            <Badge key={tag} variant="secondary" className="bg-[#E8E3D9]/60 text-[#6B5744] text-xs px-2 py-0">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                      <Link to={`/shop/${featured.shop_id}`} data-testid="featured-more-btn" className="shrink-0">
-                        <Button className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2 font-medium px-6">
-                          More <ArrowRight className="w-4 h-4" />
-                        </Button>
-                      </Link>
-                    </div>
+                    <Link
+                      to={`/shop/${featured.shop_id}`}
+                      className="text-[#B55B49] text-sm font-medium hover:underline underline-offset-2 shrink-0"
+                      data-testid="featured-more-btn"
+                    >
+                      more
+                    </Link>
                   </div>
                 </div>
               </motion.div>
