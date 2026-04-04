@@ -33,20 +33,20 @@ export default function Navbar() {
       data-testid="navbar"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="flex items-center justify-between h-14">
-          {/* Left — Navigation Links */}
-          <div className="hidden md:flex items-center gap-7">
+        <div className="flex items-center h-14 relative">
+          {/* Center — Navigation Links */}
+          <div className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
             <Link to="/" className={navLinkClass('/')} data-testid="nav-home">
               Home
             </Link>
             <Link to="/map" className={`${navLinkClass('/map')} flex items-center gap-1.5`} data-testid="nav-cafe">
               <MapPin className="w-3.5 h-3.5" /> Cafe
             </Link>
-            <Link to="/cukp" className={navLinkClass('/cukp')} data-testid="nav-about">
-              About
-            </Link>
             <Link to="/labs" className={`${navLinkClass('/labs')} flex items-center gap-1.5`} data-testid="nav-labs">
               <FlaskConical className="w-3.5 h-3.5" /> Labs
+            </Link>
+            <Link to="/cukp" className={navLinkClass('/cukp')} data-testid="nav-cukp">
+              CUKP
             </Link>
             <Link to="/contact" className={navLinkClass('/contact')} data-testid="nav-contact">
               Contact Us
@@ -118,11 +118,11 @@ export default function Navbar() {
             <Link to="/map" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1 flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" /> Cafe
             </Link>
-            <Link to="/cukp" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
-              About
-            </Link>
             <Link to="/labs" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1 flex items-center gap-1">
               <FlaskConical className="w-3.5 h-3.5" /> Labs
+            </Link>
+            <Link to="/cukp" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
+              CUKP
             </Link>
             <Link to="/contact" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
               Contact Us
