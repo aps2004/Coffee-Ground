@@ -36,16 +36,23 @@ export default function Navbar() {
         <div className="flex items-center h-14 relative">
           {/* Left — Coffee Grinder Logo */}
           <Link to="/" className="shrink-0 hover:opacity-80 transition-opacity" data-testid="nav-logo">
-            <svg width="28" height="28" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="18" y="6" width="28" height="8" rx="2" fill="#2C1A12"/>
-              <rect x="29" y="2" width="6" height="6" rx="3" fill="#B55B49"/>
-              <path d="M20 14h24l3 18H17l3-18z" fill="#2C1A12"/>
-              <rect x="22" y="18" width="20" height="10" rx="2" fill="#D4B996" opacity="0.5"/>
-              <circle cx="32" cy="23" r="4" fill="#B55B49" opacity="0.6"/>
-              <rect x="14" y="32" width="36" height="24" rx="3" fill="#2C1A12"/>
-              <rect x="18" y="36" width="28" height="16" rx="2" fill="#3D2A1E"/>
-              <rect x="26" y="56" width="12" height="4" rx="1" fill="#2C1A12"/>
-              <rect x="20" y="60" width="24" height="3" rx="1.5" fill="#6B5744"/>
+            <svg width="28" height="28" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" strokeLinecap="round" strokeLinejoin="round">
+              {/* Crank handle knob */}
+              <circle cx="20" cy="10" r="4" stroke="#2C1A12" strokeWidth="3.5" fill="none"/>
+              {/* Crank arm */}
+              <line x1="24" y1="10" x2="48" y2="10" stroke="#2C1A12" strokeWidth="3.5"/>
+              {/* Crank funnel */}
+              <path d="M44 4 L52 4 L50 10 L46 10 Z" stroke="#2C1A12" strokeWidth="3.5" fill="none"/>
+              {/* Top body */}
+              <rect x="14" y="14" width="28" height="28" rx="3" stroke="#2C1A12" strokeWidth="3.5" fill="none"/>
+              {/* Viewing slot */}
+              <rect x="25" y="20" width="6" height="16" rx="3" stroke="#2C1A12" strokeWidth="3.5" fill="none"/>
+              {/* Divider line */}
+              <line x1="14" y1="42" x2="42" y2="42" stroke="#2C1A12" strokeWidth="3.5"/>
+              {/* Drawer */}
+              <rect x="14" y="42" width="28" height="16" rx="3" stroke="#2C1A12" strokeWidth="3.5" fill="none"/>
+              {/* Drawer handle */}
+              <path d="M30 52 L34 52 L34 55" stroke="#2C1A12" strokeWidth="3" fill="none"/>
             </svg>
           </Link>
 
