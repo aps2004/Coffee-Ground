@@ -593,6 +593,7 @@ class ArticleSectionInput(BaseModel):
 class ArticleCreate(BaseModel):
     title: str
     summary: str = ""
+    content: str = ""
     category: str = ""
     tags: List[str] = []
     author_name: str = ""
@@ -604,6 +605,7 @@ class ArticleCreate(BaseModel):
 class ArticleUpdate(BaseModel):
     title: Optional[str] = None
     summary: Optional[str] = None
+    content: Optional[str] = None
     category: Optional[str] = None
     tags: Optional[List[str]] = None
     author_name: Optional[str] = None
@@ -860,92 +862,91 @@ async def seed_sample_shops():
     await db.shops.insert_many(sample_shops)
     logger.info(f"Seeded {len(sample_shops)} sample coffee shops")
 
+def _sections_to_html(sections):
+    """Convert legacy section list to rich HTML content."""
+    html = ""
+    for s in sections:
+        if s.get("heading"):
+            html += f"<h2>{s['heading']}</h2>\n"
+        if s.get("body"):
+            for para in s["body"].split("\n\n"):
+                html += f"<p>{para.strip()}</p>\n"
+    return html
+
 async def seed_sample_articles():
     count = await db.articles.count_documents({})
     if count > 0:
         return
-    articles = [
+
+    raw_articles = [
         {
-            "article_id": f"art_{uuid.uuid4().hex[:12]}",
             "title": "The V60 Pour-Over: A Ritual Worth Mastering",
             "summary": "The Hario V60 has become the gold standard for manual pour-over brewing. We break down the technique, the science, and why this simple cone produces extraordinary coffee.",
             "category": "Devices",
             "tags": ["pour-over", "v60", "brewing", "technique"],
-            "cover_image": "",
             "author_name": "James Hartley",
             "author_bio": "Co-founder of Coffee Grounds and Chief Taster. Third-generation tea merchant turned coffee evangelist.",
-            "author_image": "",
             "sections": [
-                {"heading": "Why the V60?", "body": "The Hario V60 — named for its V shape and 60-degree angle — is deceptively simple. A single cone of ceramic, glass, or plastic with spiral ridges inside. No moving parts, no electronics, no buttons. Yet in the hands of a skilled brewer, it produces coffee of breathtaking clarity and complexity.\n\nWhat makes it special is airflow. Those spiral ridges create channels between the filter paper and the cone walls, allowing air to escape evenly during extraction. This means the water flows through the grounds at a consistent rate, extracting flavour compounds in a balanced, predictable way.", "image_path": ""},
-                {"heading": "The Perfect Technique", "body": "Start with 15g of medium-fine coffee and 250ml of water at 93°C. The grind should resemble coarse sand — too fine and you'll over-extract, too coarse and the water rushes through.\n\nBegin with a 30-second bloom: pour 30ml of water in a gentle spiral, saturating all the grounds. Watch as the coffee bed rises and bubbles — that's CO2 escaping, a sign of freshness. After the bloom, pour in slow, concentric circles, keeping the water level consistent. The total brew time should be around 2:30 to 3:00 minutes.", "image_path": ""},
+                {"heading": "Why the V60?", "body": "The Hario V60 \u2014 named for its V shape and 60-degree angle \u2014 is deceptively simple. A single cone of ceramic, glass, or plastic with spiral ridges inside. No moving parts, no electronics, no buttons. Yet in the hands of a skilled brewer, it produces coffee of breathtaking clarity and complexity.\n\nWhat makes it special is airflow. Those spiral ridges create channels between the filter paper and the cone walls, allowing air to escape evenly during extraction. This means the water flows through the grounds at a consistent rate, extracting flavour compounds in a balanced, predictable way.", "image_path": ""},
+                {"heading": "The Perfect Technique", "body": "Start with 15g of medium-fine coffee and 250ml of water at 93\u00b0C. The grind should resemble coarse sand \u2014 too fine and you'll over-extract, too coarse and the water rushes through.\n\nBegin with a 30-second bloom: pour 30ml of water in a gentle spiral, saturating all the grounds. Watch as the coffee bed rises and bubbles \u2014 that's CO2 escaping, a sign of freshness. After the bloom, pour in slow, concentric circles, keeping the water level consistent. The total brew time should be around 2:30 to 3:00 minutes.", "image_path": ""},
                 {"heading": "Common Mistakes", "body": "The biggest error beginners make is pouring too fast. The V60 rewards patience. A steady, controlled pour gives you a clean, nuanced cup. Rushing creates channels in the coffee bed where water takes the path of least resistance, leading to uneven extraction.\n\nAnother common mistake is using water straight off the boil. Let it cool for 30 seconds. Boiling water scorches the grounds and produces bitter, harsh flavours that mask the delicate origin character.", "image_path": ""}
             ],
-            "published": True,
-            "created_by": "system",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "updated_at": datetime.now(timezone.utc).isoformat()
         },
         {
-            "article_id": f"art_{uuid.uuid4().hex[:12]}",
             "title": "La Marzocco Linea Mini: The Home Espresso Revolution",
             "summary": "Once the preserve of commercial kitchens, the La Marzocco Linea Mini brought professional-grade espresso into the home. We explore what makes this machine a modern icon.",
             "category": "Machines",
             "tags": ["espresso", "la-marzocco", "home-brewing", "machines"],
-            "cover_image": "",
             "author_name": "Eleanor Whitfield",
             "author_bio": "Co-founder and Editor-in-Chief of Coffee Grounds. Former food journalist with a decade covering the UK dining scene.",
-            "author_image": "",
             "sections": [
-                {"heading": "A Commercial Heart in a Domestic Body", "body": "The Linea Mini takes the dual-boiler system from La Marzocco's legendary Linea Classic — the machine that built the specialty coffee industry — and shrinks it to countertop size. The result is a home machine with the thermal stability and extraction quality of a professional setup.\n\nThe saturated group head maintains temperature within 0.5°C during extraction, meaning every shot pulls with the same consistency. This is the difference between good espresso and exceptional espresso.", "image_path": ""},
-                {"heading": "Living With the Linea Mini", "body": "After six months with a Linea Mini in the Coffee Grounds test kitchen, we can confirm: it changes your relationship with coffee. The 20-minute warm-up time encourages a morning ritual. The mechanical paddle gives you physical control over extraction.\n\nThe machine is beautiful too — available in a range of colours, with clean Italian design lines that make it a genuine piece of kitchen furniture. It's an investment at roughly £3,500, but for daily espresso drinkers, the per-cup cost drops below café prices within two years.", "image_path": ""},
-                {"heading": "Who Is It For?", "body": "The Linea Mini is for the serious home barista who has outgrown pod machines and entry-level espresso makers. It demands good beans, a quality grinder (budget at least £400 for a Niche Zero or Eureka Mignon), and a willingness to learn.\n\nIf you're the type who weighs doses to the tenth of a gram and times shots with a stopwatch, this machine will reward your obsession. If you want convenience above all else, look elsewhere.", "image_path": ""}
+                {"heading": "A Commercial Heart in a Domestic Body", "body": "The Linea Mini takes the dual-boiler system from La Marzocco's legendary Linea Classic \u2014 the machine that built the specialty coffee industry \u2014 and shrinks it to countertop size. The result is a home machine with the thermal stability and extraction quality of a professional setup.\n\nThe saturated group head maintains temperature within 0.5\u00b0C during extraction, meaning every shot pulls with the same consistency. This is the difference between good espresso and exceptional espresso.", "image_path": ""},
+                {"heading": "Living With the Linea Mini", "body": "After six months with a Linea Mini in the Coffee Grounds test kitchen, we can confirm: it changes your relationship with coffee. The 20-minute warm-up time encourages a morning ritual. The mechanical paddle gives you physical control over extraction.\n\nThe machine is beautiful too \u2014 available in a range of colours, with clean Italian design lines that make it a genuine piece of kitchen furniture. It's an investment at roughly \u00a33,500, but for daily espresso drinkers, the per-cup cost drops below caf\u00e9 prices within two years.", "image_path": ""},
+                {"heading": "Who Is It For?", "body": "The Linea Mini is for the serious home barista who has outgrown pod machines and entry-level espresso makers. It demands good beans, a quality grinder (budget at least \u00a3400 for a Niche Zero or Eureka Mignon), and a willingness to learn.\n\nIf you're the type who weighs doses to the tenth of a gram and times shots with a stopwatch, this machine will reward your obsession. If you want convenience above all else, look elsewhere.", "image_path": ""}
             ],
-            "published": True,
-            "created_by": "system",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "updated_at": datetime.now(timezone.utc).isoformat()
         },
         {
-            "article_id": f"art_{uuid.uuid4().hex[:12]}",
             "title": "Maxwell Colonna-Dashwood: The Scientist Behind the Cup",
             "summary": "Three-time UK Barista Champion and founder of Colonna & Smalls, Maxwell Colonna-Dashwood has spent two decades pushing the boundaries of what coffee can be.",
             "category": "Personas",
             "tags": ["interview", "barista-champion", "colonna", "specialty"],
-            "cover_image": "",
             "author_name": "Eleanor Whitfield",
             "author_bio": "Co-founder and Editor-in-Chief of Coffee Grounds.",
-            "author_image": "",
             "sections": [
-                {"heading": "The Path to Three Championships", "body": "Maxwell Colonna-Dashwood didn't set out to become a coffee legend. A music graduate from Bath Spa University, he stumbled into specialty coffee while working part-time at a local café. But once he understood the science — the chemistry of extraction, the physics of water temperature, the biology of fermentation — he was hooked.\n\n\"Coffee is the most complex beverage we consume,\" he tells me over a precisely brewed filter at Colonna & Smalls in Bath. \"Wine has around 200 flavour compounds. Coffee has over 1,000. We're only beginning to understand what's possible.\"", "image_path": ""},
-                {"heading": "Water: The Hidden Variable", "body": "Maxwell's most significant contribution to the industry has been his research on water. His book, 'Water For Coffee,' co-authored with Christopher Hendon, demonstrated that the mineral composition of water fundamentally alters extraction and flavour.\n\n\"The same bean, the same grind, the same temperature — change the water and you get a completely different cup,\" he explains. \"We found that certain mineral profiles enhance acidity, while others emphasise sweetness. It was a revelation.\"", "image_path": ""},
-                {"heading": "The Future of Specialty Coffee", "body": "Looking ahead, Maxwell sees a coffee industry that's more transparent, more scientific, and more accessible. \"The third wave democratised quality. The next wave will democratise knowledge. Imagine scanning a QR code on your bag of beans and seeing every data point from farm to cup — altitude, processing method, roast profile, even the water recipe for optimal brewing.\"\n\nHis vision is already taking shape at Colonna & Smalls, where the menu is organised by flavour profile rather than drink type, encouraging exploration over habit.", "image_path": ""}
+                {"heading": "The Path to Three Championships", "body": "Maxwell Colonna-Dashwood didn't set out to become a coffee legend. A music graduate from Bath Spa University, he stumbled into specialty coffee while working part-time at a local caf\u00e9. But once he understood the science \u2014 the chemistry of extraction, the physics of water temperature, the biology of fermentation \u2014 he was hooked.\n\n\"Coffee is the most complex beverage we consume,\" he tells me over a precisely brewed filter at Colonna & Smalls in Bath. \"Wine has around 200 flavour compounds. Coffee has over 1,000. We're only beginning to understand what's possible.\"", "image_path": ""},
+                {"heading": "Water: The Hidden Variable", "body": "Maxwell's most significant contribution to the industry has been his research on water. His book, 'Water For Coffee,' co-authored with Christopher Hendon, demonstrated that the mineral composition of water fundamentally alters extraction and flavour.\n\n\"The same bean, the same grind, the same temperature \u2014 change the water and you get a completely different cup,\" he explains. \"We found that certain mineral profiles enhance acidity, while others emphasise sweetness. It was a revelation.\"", "image_path": ""},
+                {"heading": "The Future of Specialty Coffee", "body": "Looking ahead, Maxwell sees a coffee industry that's more transparent, more scientific, and more accessible. \"The third wave democratised quality. The next wave will democratise knowledge. Imagine scanning a QR code on your bag of beans and seeing every data point from farm to cup \u2014 altitude, processing method, roast profile, even the water recipe for optimal brewing.\"\n\nHis vision is already taking shape at Colonna & Smalls, where the menu is organised by flavour profile rather than drink type, encouraging exploration over habit.", "image_path": ""}
             ],
-            "published": True,
-            "created_by": "system",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "updated_at": datetime.now(timezone.utc).isoformat()
         },
         {
-            "article_id": f"art_{uuid.uuid4().hex[:12]}",
             "title": "Cold Brew vs Iced Pour-Over: The Summer Showdown",
             "summary": "Two methods, two philosophies, one goal: exceptional cold coffee. We put cold brew and iced pour-over head to head to settle the summer debate once and for all.",
             "category": "Techniques",
             "tags": ["cold-brew", "iced-coffee", "summer", "techniques"],
-            "cover_image": "",
             "author_name": "James Hartley",
             "author_bio": "Co-founder of Coffee Grounds. Manages The Grinder and roaster relationships nationwide.",
-            "author_image": "",
             "sections": [
-                {"heading": "Cold Brew: The Patient Approach", "body": "Cold brew is the slow play. Coarsely ground coffee steeped in cold water for 12–24 hours, then filtered. The long extraction at low temperature produces a concentrate that's smooth, sweet, and low in acidity.\n\nThe science is straightforward: cold water extracts different compounds than hot water. You get fewer of the bright, volatile acids that define a hot pour-over, and more of the sugars and chocolatey compounds that make cold brew feel like liquid velvet. The result is a forgiving, approachable cup that works beautifully with milk or on its own over ice.", "image_path": ""},
-                {"heading": "Iced Pour-Over: The Bright Alternative", "body": "The Japanese iced method — brewing hot coffee directly onto ice — is cold brew's polar opposite. It's fast (3 minutes vs 12 hours), bright, and preserves the aromatics that cold brew mutes.\n\nThe technique: halve your water volume but keep the same dose of coffee. Brew hot directly onto an equal weight of ice. The ice rapidly chills the coffee, locking in volatile flavour compounds that would otherwise dissipate. The result is a cold cup with the clarity and complexity of a hot pour-over — fruit-forward, floral, and dynamic.", "image_path": ""},
-                {"heading": "The Verdict", "body": "There's no winner — only context. Cold brew is your companion for long summer afternoons: mellow, forgiving, batch-friendly. Make a litre on Sunday and drink it all week.\n\nIced pour-over is for the moment when you want to taste the difference between a Kenyan and an Ethiopian, cold. It demands more effort but delivers more nuance. In our test kitchen, we keep both on rotation from May to September.\n\nThe real question isn't which is better — it's which beans to use for each. Our recommendation: medium-dark roasts for cold brew (to enhance that chocolate sweetness) and light, fruity roasts for iced pour-over (to maximise brightness).", "image_path": ""}
+                {"heading": "Cold Brew: The Patient Approach", "body": "Cold brew is the slow play. Coarsely ground coffee steeped in cold water for 12\u201324 hours, then filtered. The long extraction at low temperature produces a concentrate that's smooth, sweet, and low in acidity.\n\nThe science is straightforward: cold water extracts different compounds than hot water. You get fewer of the bright, volatile acids that define a hot pour-over, and more of the sugars and chocolatey compounds that make cold brew feel like liquid velvet. The result is a forgiving, approachable cup that works beautifully with milk or on its own over ice.", "image_path": ""},
+                {"heading": "Iced Pour-Over: The Bright Alternative", "body": "The Japanese iced method \u2014 brewing hot coffee directly onto ice \u2014 is cold brew's polar opposite. It's fast (3 minutes vs 12 hours), bright, and preserves the aromatics that cold brew mutes.\n\nThe technique: halve your water volume but keep the same dose of coffee. Brew hot directly onto an equal weight of ice. The ice rapidly chills the coffee, locking in volatile flavour compounds that would otherwise dissipate. The result is a cold cup with the clarity and complexity of a hot pour-over \u2014 fruit-forward, floral, and dynamic.", "image_path": ""},
+                {"heading": "The Verdict", "body": "There's no winner \u2014 only context. Cold brew is your companion for long summer afternoons: mellow, forgiving, batch-friendly. Make a litre on Sunday and drink it all week.\n\nIced pour-over is for the moment when you want to taste the difference between a Kenyan and an Ethiopian, cold. It demands more effort but delivers more nuance. In our test kitchen, we keep both on rotation from May to September.\n\nThe real question isn't which is better \u2014 it's which beans to use for each. Our recommendation: medium-dark roasts for cold brew (to enhance that chocolate sweetness) and light, fruity roasts for iced pour-over (to maximise brightness).", "image_path": ""}
             ],
+        }
+    ]
+
+    articles = []
+    for raw in raw_articles:
+        articles.append({
+            "article_id": f"art_{uuid.uuid4().hex[:12]}",
+            **raw,
+            "content": _sections_to_html(raw["sections"]),
+            "cover_image": "",
+            "author_image": "",
             "published": True,
             "created_by": "system",
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
-        }
-    ]
+        })
+
     await db.articles.insert_many(articles)
     logger.info(f"Seeded {len(articles)} sample articles")
 
@@ -979,7 +980,7 @@ async def startup():
         f.write("# Test Credentials\n\n")
         f.write(f"## Admin\n- Login Name: {os.environ.get('ADMIN_EMAIL', 'test123')}\n")
         f.write(f"- Password: {os.environ.get('ADMIN_PASSWORD', '12345')}\n")
-        f.write(f"- Role: admin\n\n")
+        f.write("- Role: admin\n\n")
         f.write("## Auth Endpoints\n")
         f.write("- POST /api/auth/admin/login (body: {email, password} - email field is used for login name)\n")
         f.write("- POST /api/auth/session (Google Auth)\n")

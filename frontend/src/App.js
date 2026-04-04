@@ -11,6 +11,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import AuthCallback from './pages/AuthCallback';
 import CUKPPage from './pages/CUKPPage';
 import ContactPage from './pages/ContactPage';
+import LabsPage from './pages/LabsPage';
+import ArticleDetail from './pages/ArticleDetail';
 import './App.css';
 
 function AppRouter() {
@@ -31,6 +33,8 @@ function AppRouter() {
           <Route path="/map" element={<MapView />} />
           <Route path="/cukp" element={<CUKPPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/labs" element={<LabsPage />} />
+          <Route path="/labs/:articleId" element={<ArticleDetail />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
@@ -51,6 +55,7 @@ function AppRouter() {
                 <Link to="/" className="block text-xs text-white/50 hover:text-white/80 transition-colors">Home</Link>
                 <Link to="/map" className="block text-xs text-white/50 hover:text-white/80 transition-colors">Cafe Map</Link>
                 <Link to="/cukp" className="block text-xs text-white/50 hover:text-white/80 transition-colors">About CUKP</Link>
+                <Link to="/labs" className="block text-xs text-white/50 hover:text-white/80 transition-colors">Labs</Link>
                 <Link to="/contact" className="block text-xs text-white/50 hover:text-white/80 transition-colors">Contact Us</Link>
               </div>
             </div>

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Edit2, Trash2, Upload, X, Save, Image, MapPin, Star, Coffee, Music, UserPlus, Users, Mail, Eye } from 'lucide-react';
+import { Plus, Edit2, Trash2, Upload, X, Save, Image, MapPin, Star, Coffee, Music, UserPlus, Users, Mail, Eye, FileText, Globe, EyeOff } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -9,6 +9,8 @@ import { Textarea } from '../components/ui/textarea';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { useAuth } from '../contexts/AuthContext';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -109,6 +111,130 @@ function ShopForm({ shop, onSave, onCancel }) {
   );
 }
 
+const QUILL_MODULES = {
+  toolbar: [
+    [{ header: [2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    ['blockquote'],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['link', 'image'],
+    ['clean'],
+  ],
+};
+
+const QUILL_FORMATS = [
+  'header', 'bold', 'italic', 'underline', 'strike',
+  'blockquote', 'list', 'link', 'image',
+];
+
+const ARTICLE_CATEGORIES = ['Devices', 'Machines', 'Personas', 'Techniques'];
+
+function ArticleForm({ article, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    title: article?.title || '',
+    summary: article?.summary || '',
+    content: article?.content || '',
+    category: article?.category || 'Devices',
+    tags: article?.tags?.join(', ') || '',
+    author_name: article?.author_name || '',
+    author_bio: article?.author_bio || '',
+    published: article?.published ?? false,
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const data = {
+        ...form,
+        tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+      };
+      await onSave(data);
+    } catch (err) {
+      console.error('Save failed:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label className="text-[#2C1A12] text-sm">Title *</Label>
+          <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]" data-testid="article-title-input" />
+        </div>
+        <div>
+          <Label className="text-[#2C1A12] text-sm">Category *</Label>
+          <select
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            className="mt-1 w-full rounded-md border border-[#E8E3D9] bg-[#FDFBF7] px-3 py-2 text-sm text-[#2C1A12] focus:outline-none focus:ring-2 focus:ring-[#B55B49]/30"
+            data-testid="article-category-select"
+          >
+            {ARTICLE_CATEGORIES.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div>
+        <Label className="text-[#2C1A12] text-sm">Summary</Label>
+        <Textarea value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} rows={2} className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]" data-testid="article-summary-input" />
+      </div>
+      <div>
+        <Label className="text-[#2C1A12] text-sm">Content (Rich Text) *</Label>
+        <div className="mt-1" data-testid="article-content-editor">
+          <ReactQuill
+            theme="snow"
+            value={form.content}
+            onChange={(val) => setForm({ ...form, content: val })}
+            modules={QUILL_MODULES}
+            formats={QUILL_FORMATS}
+            placeholder="Write your article content here..."
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label className="text-[#2C1A12] text-sm">Author Name</Label>
+          <Input value={form.author_name} onChange={(e) => setForm({ ...form, author_name: e.target.value })} className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]" data-testid="article-author-input" />
+        </div>
+        <div>
+          <Label className="text-[#2C1A12] text-sm">Tags (comma separated)</Label>
+          <Input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="pour-over, technique, v60" className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]" data-testid="article-tags-input" />
+        </div>
+      </div>
+      <div>
+        <Label className="text-[#2C1A12] text-sm">Author Bio</Label>
+        <Input value={form.author_bio} onChange={(e) => setForm({ ...form, author_bio: e.target.value })} className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]" data-testid="article-author-bio-input" />
+      </div>
+      <div className="flex items-center gap-3">
+        <label className="flex items-center gap-2 cursor-pointer" data-testid="article-published-toggle">
+          <input
+            type="checkbox"
+            checked={form.published}
+            onChange={(e) => setForm({ ...form, published: e.target.checked })}
+            className="w-4 h-4 rounded border-[#E8E3D9] text-[#B55B49] focus:ring-[#B55B49]/30"
+          />
+          <span className="text-sm text-[#2C1A12]">Published</span>
+        </label>
+      </div>
+      <div className="flex gap-3 pt-2">
+        <Button type="submit" disabled={saving} className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2" data-testid="article-save-btn">
+          <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Article'}
+        </Button>
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel} className="border-[#E8E3D9] text-[#6B5744]" data-testid="article-cancel-btn">
+            Cancel
+          </Button>
+        )}
+      </div>
+    </form>
+  );
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -122,6 +248,9 @@ export default function AdminDashboard() {
   const [contacts, setContacts] = useState([]);
   const [showAddAdmin, setShowAddAdmin] = useState(false);
   const [newAdmin, setNewAdmin] = useState({ login_name: '', password: '', name: '' });
+  const [articles, setArticles] = useState([]);
+  const [editingArticle, setEditingArticle] = useState(null);
+  const [showAddArticle, setShowAddArticle] = useState(false);
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -131,6 +260,7 @@ export default function AdminDashboard() {
     fetchShops();
     fetchAdmins();
     fetchContacts();
+    fetchArticles();
   }, [user, navigate]);
 
   const fetchShops = async () => {
@@ -159,6 +289,51 @@ export default function AdminDashboard() {
       setContacts(res.data);
     } catch (err) {
       console.error('Failed to fetch contacts:', err);
+    }
+  };
+
+  const fetchArticles = async () => {
+    try {
+      const res = await axios.get(`${API}/articles?published_only=false`, { withCredentials: true });
+      setArticles(res.data);
+    } catch (err) {
+      console.error('Failed to fetch articles:', err);
+    }
+  };
+
+  const handleCreateArticle = async (data) => {
+    await axios.post(`${API}/articles`, data, { withCredentials: true });
+    setShowAddArticle(false);
+    await fetchArticles();
+  };
+
+  const handleUpdateArticle = async (data) => {
+    await axios.put(`${API}/articles/${editingArticle.article_id}`, data, { withCredentials: true });
+    setEditingArticle(null);
+    await fetchArticles();
+  };
+
+  const handleDeleteArticle = async (articleId) => {
+    if (!window.confirm('Are you sure you want to delete this article?')) return;
+    try {
+      await axios.delete(`${API}/articles/${articleId}`, { withCredentials: true });
+      await fetchArticles();
+    } catch (err) {
+      console.error('Delete article failed:', err);
+    }
+  };
+
+  const handleCoverUpload = async (articleId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      await axios.post(`${API}/articles/${articleId}/cover`, formData, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      await fetchArticles();
+    } catch (err) {
+      console.error('Cover upload failed:', err);
     }
   };
 
@@ -258,6 +433,7 @@ export default function AdminDashboard() {
         <div className="flex gap-1 mb-8 border-b border-[#E8E3D9]" data-testid="admin-tabs">
           {[
             { key: 'shops', label: 'Shops', icon: Coffee },
+            { key: 'articles', label: 'Articles', icon: FileText },
             { key: 'admins', label: 'Admins', icon: Users },
             { key: 'messages', label: 'Messages', icon: Mail, badge: unreadCount },
           ].map(tab => (
@@ -352,6 +528,90 @@ export default function AdminDashboard() {
                           <Edit2 className="w-3 h-3" /> Edit
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => handleDelete(shop.shop_id)} className="border-red-200 text-red-600 hover:bg-red-50 gap-1" data-testid={`delete-shop-${shop.shop_id}`}>
+                          <Trash2 className="w-3 h-3" /> Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ============ ARTICLES TAB ============ */}
+        {activeTab === 'articles' && (
+          <div data-testid="articles-section">
+            <div className="flex justify-end mb-6">
+              <Button onClick={() => { setShowAddArticle(true); setEditingArticle(null); }} className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2" data-testid="add-article-btn">
+                <Plus className="w-4 h-4" /> New Article
+              </Button>
+            </div>
+
+            {showAddArticle && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-[#E8E3D9] rounded-lg p-6 mb-8">
+                <h2 className="font-['Cormorant_Garamond'] text-2xl font-light text-[#2C1A12] mb-4">New Article</h2>
+                <ArticleForm onSave={handleCreateArticle} onCancel={() => setShowAddArticle(false)} />
+              </motion.div>
+            )}
+
+            {editingArticle && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-[#E8E3D9] rounded-lg p-6 mb-8">
+                <h2 className="font-['Cormorant_Garamond'] text-2xl font-light text-[#2C1A12] mb-4">Edit: {editingArticle.title}</h2>
+                <ArticleForm article={editingArticle} onSave={handleUpdateArticle} onCancel={() => setEditingArticle(null)} />
+              </motion.div>
+            )}
+
+            {articles.length === 0 ? (
+              <div className="text-center py-20">
+                <FileText className="w-12 h-12 text-[#D4B996] mx-auto mb-4" />
+                <p className="text-[#6B5744]">No articles yet. Write your first piece!</p>
+              </div>
+            ) : (
+              <div className="space-y-4" data-testid="admin-article-list">
+                {articles.map(article => (
+                  <div key={article.article_id} className="bg-white border border-[#E8E3D9] rounded-lg p-5" data-testid={`admin-article-${article.article_id}`}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1">
+                          <h3 className="font-medium text-[#2C1A12] text-lg">{article.title}</h3>
+                          <Badge variant="secondary" className="bg-[#E8E3D9] text-[#6B5744] text-xs">
+                            {article.category}
+                          </Badge>
+                          {article.published ? (
+                            <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs gap-1">
+                              <Globe className="w-3 h-3" /> Published
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 text-xs gap-1">
+                              <EyeOff className="w-3 h-3" /> Draft
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[#6B5744] text-sm line-clamp-2">{article.summary}</p>
+                        <div className="flex items-center gap-4 mt-2 text-xs text-[#6B5744]/60">
+                          {article.author_name && <span>By {article.author_name}</span>}
+                          {article.created_at && <span>{new Date(article.created_at).toLocaleDateString()}</span>}
+                        </div>
+                        {/* Cover image */}
+                        <div className="flex items-center gap-2 mt-3">
+                          {article.cover_image ? (
+                            <div className="w-16 h-16 rounded overflow-hidden border border-[#E8E3D9]">
+                              <img src={`${API}/files/${article.cover_image}`} alt="cover" className="w-full h-full object-cover" />
+                            </div>
+                          ) : null}
+                          <label className="w-16 h-16 rounded border-2 border-dashed border-[#E8E3D9] flex flex-col items-center justify-center cursor-pointer hover:border-[#B55B49] transition-colors text-[#6B5744]" data-testid={`upload-cover-${article.article_id}`}>
+                            <Upload className="w-4 h-4" />
+                            <span className="text-[9px] mt-0.5">Cover</span>
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files[0]) handleCoverUpload(article.article_id, e.target.files[0]); }} />
+                          </label>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-4 shrink-0">
+                        <Button size="sm" variant="outline" onClick={() => { setEditingArticle(article); setShowAddArticle(false); }} className="border-[#E8E3D9] text-[#6B5744] hover:bg-[#E8E3D9] gap-1" data-testid={`edit-article-${article.article_id}`}>
+                          <Edit2 className="w-3 h-3" /> Edit
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleDeleteArticle(article.article_id)} className="border-red-200 text-red-600 hover:bg-red-50 gap-1" data-testid={`delete-article-${article.article_id}`}>
                           <Trash2 className="w-3 h-3" /> Delete
                         </Button>
                       </div>

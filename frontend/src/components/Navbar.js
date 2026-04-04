@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Coffee, MapPin, User, LogOut, Settings, Menu, X } from 'lucide-react';
+import { Coffee, MapPin, User, LogOut, Settings, Menu, X, FlaskConical } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -44,6 +44,9 @@ export default function Navbar() {
             </Link>
             <Link to="/cukp" className={navLinkClass('/cukp')} data-testid="nav-about">
               About
+            </Link>
+            <Link to="/labs" className={`${navLinkClass('/labs')} flex items-center gap-1.5`} data-testid="nav-labs">
+              <FlaskConical className="w-3.5 h-3.5" /> Labs
             </Link>
             <Link to="/contact" className={navLinkClass('/contact')} data-testid="nav-contact">
               Contact Us
@@ -117,6 +120,9 @@ export default function Navbar() {
             </Link>
             <Link to="/cukp" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
               About
+            </Link>
+            <Link to="/labs" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1 flex items-center gap-1">
+              <FlaskConical className="w-3.5 h-3.5" /> Labs
             </Link>
             <Link to="/contact" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
               Contact Us
