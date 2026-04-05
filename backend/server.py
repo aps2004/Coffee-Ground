@@ -19,9 +19,16 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 from bson import ObjectId
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Rate limiter
+limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -211,6 +218,50 @@ class RatingCreate(BaseModel):
 
 # Create the main app
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Brute-force protection config
+MAX_FAILED_ATTEMPTS = 5
+LOCKOUT_MINUTES = 15
+
+async def check_brute_force(email: str):
+    """Check if account is locked due to too many failed login attempts."""
+    record = await db.login_attempts.find_one({"email": email}, {"_id": 0})
+    if record and record.get("locked_until"):
+        locked_until = datetime.fromisoformat(record["locked_until"])
+        if datetime.now(timezone.utc) < locked_until:
+            remaining = int((locked_until - datetime.now(timezone.utc)).total_seconds() / 60) + 1
+            raise HTTPException(
+                status_code=429,
+                detail=f"Account locked due to too many failed attempts. Try again in {remaining} minute(s)."
+            )
+        else:
+            # Lock expired, reset
+            await db.login_attempts.delete_one({"email": email})
+
+async def record_failed_login(email: str):
+    """Record a failed login attempt and lock if threshold exceeded."""
+    record = await db.login_attempts.find_one({"email": email})
+    if record:
+        attempts = record.get("attempts", 0) + 1
+        update = {"$set": {"attempts": attempts, "last_attempt": datetime.now(timezone.utc).isoformat()}}
+        if attempts >= MAX_FAILED_ATTEMPTS:
+            locked_until = (datetime.now(timezone.utc) + timedelta(minutes=LOCKOUT_MINUTES)).isoformat()
+            update["$set"]["locked_until"] = locked_until
+            logger.warning(f"Account locked for {email} after {attempts} failed attempts")
+        await db.login_attempts.update_one({"email": email}, update)
+    else:
+        await db.login_attempts.insert_one({
+            "email": email,
+            "attempts": 1,
+            "last_attempt": datetime.now(timezone.utc).isoformat(),
+            "locked_until": None
+        })
+
+async def clear_failed_logins(email: str):
+    """Clear failed login attempts on successful login."""
+    await db.login_attempts.delete_one({"email": email})
 
 # Create router with /api prefix
 api_router = APIRouter(prefix="/api")
@@ -218,13 +269,18 @@ api_router = APIRouter(prefix="/api")
 # ---- AUTH ENDPOINTS ----
 
 @api_router.post("/auth/admin/login")
-async def admin_login(req: AdminLoginRequest, response: Response):
+@limiter.limit("5/minute")
+async def admin_login(request: Request, req: AdminLoginRequest, response: Response):
     email = req.email.lower().strip()
+    await check_brute_force(email)
     user = await db.users.find_one({"email": email, "role": "admin"}, {"_id": 0})
     if not user:
+        await record_failed_login(email)
         raise HTTPException(status_code=401, detail="Invalid credentials")
     if not verify_password(req.password, user["password_hash"]):
+        await record_failed_login(email)
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    await clear_failed_logins(email)
     access_token = create_access_token(user["user_id"], email, "admin")
     refresh_token = create_refresh_token(user["user_id"])
     response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=3600, path="/")
@@ -233,7 +289,8 @@ async def admin_login(req: AdminLoginRequest, response: Response):
     return user_data
 
 @api_router.post("/auth/register")
-async def register_user(req: UserRegisterRequest, response: Response):
+@limiter.limit("3/minute")
+async def register_user(request: Request, req: UserRegisterRequest, response: Response):
     email = req.email.lower().strip()
     name = req.name.strip()
     if not email or not req.password or not name:
@@ -262,13 +319,18 @@ async def register_user(req: UserRegisterRequest, response: Response):
     return user
 
 @api_router.post("/auth/login")
-async def login_user(req: UserLoginRequest, response: Response):
+@limiter.limit("5/minute")
+async def login_user(request: Request, req: UserLoginRequest, response: Response):
     email = req.email.lower().strip()
+    await check_brute_force(email)
     user = await db.users.find_one({"email": email}, {"_id": 0})
     if not user or not user.get("password_hash"):
+        await record_failed_login(email)
         raise HTTPException(status_code=401, detail="Invalid email or password")
     if not verify_password(req.password, user["password_hash"]):
+        await record_failed_login(email)
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    await clear_failed_logins(email)
     access_token = create_access_token(user["user_id"], email, user.get("role", "user"))
     refresh_token = create_refresh_token(user["user_id"])
     response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=3600, path="/")
@@ -349,6 +411,7 @@ async def logout(request: Request, response: Response):
     return {"message": "Logged out"}
 
 @api_router.post("/auth/change-password")
+@limiter.limit("3/minute")
 async def change_password(req: PasswordChangeRequest, request: Request):
     user = await get_current_user(request)
     if not user:
@@ -605,7 +668,8 @@ class ContactCreate(BaseModel):
     message: str
 
 @api_router.post("/contact")
-async def submit_contact(req: ContactCreate):
+@limiter.limit("5/minute")
+async def submit_contact(request: Request, req: ContactCreate):
     doc = {
         "contact_id": str(uuid.uuid4()),
         "name": req.name,
@@ -1128,6 +1192,8 @@ async def startup():
     await db.user_sessions.create_index("session_token")
     await db.articles.create_index("article_id", unique=True)
     await db.articles.create_index("category")
+    await db.login_attempts.create_index("email", unique=True)
+    await db.login_attempts.create_index("last_attempt", expireAfterSeconds=3600)
     
     await seed_admin()
     await seed_sample_shops()
