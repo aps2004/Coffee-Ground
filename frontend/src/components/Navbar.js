@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Coffee, MapPin, User, LogOut, Settings, Menu, X, FlaskConical } from 'lucide-react';
+import { Coffee, MapPin, User, LogOut, Settings, Menu, X, FlaskConical, KeyRound } from 'lucide-react';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 import { useAuth } from '../contexts/AuthContext';
 import {
   DropdownMenu,
@@ -10,12 +12,49 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import axios from 'axios';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ current: '', newPass: '', confirm: '' });
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+    if (passwordForm.newPass.length < 6) {
+      setPasswordError('New password must be at least 6 characters');
+      return;
+    }
+    if (passwordForm.newPass !== passwordForm.confirm) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      await axios.post(`${API}/auth/change-password`, {
+        current_password: passwordForm.current,
+        new_password: passwordForm.newPass,
+      }, { withCredentials: true });
+      setPasswordSuccess('Password updated successfully');
+      setPasswordForm({ current: '', newPass: '', confirm: '' });
+      setTimeout(() => setShowPasswordDialog(false), 1500);
+    } catch (err) {
+      setPasswordError(err.response?.data?.detail || 'Failed to change password');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
 
   const navLinkClass = (path) =>
     `text-sm font-medium transition-colors ${
@@ -98,6 +137,11 @@ export default function Navbar() {
                       </Link>
                     </DropdownMenuItem>
                   )}
+                  {user.password_hash !== undefined || !user.google_id ? (
+                    <DropdownMenuItem onClick={() => { setShowPasswordDialog(true); setPasswordError(''); setPasswordSuccess(''); }} className="cursor-pointer" data-testid="nav-change-password">
+                      <KeyRound className="w-4 h-4 mr-2" /> Change Password
+                    </DropdownMenuItem>
+                  ) : null}
                   <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600" data-testid="nav-logout-btn">
                     <LogOut className="w-4 h-4 mr-2" /> Sign Out
                   </DropdownMenuItem>
@@ -165,6 +209,66 @@ export default function Navbar() {
           </div>
         )}
       </div>
+
+      {/* Password Change Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent className="bg-white border-[#E8E3D9] max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-['Cormorant_Garamond'] text-xl text-[#2C1A12]">Change Password</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleChangePassword} className="space-y-4 mt-2">
+            {passwordError && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2" data-testid="password-change-error">{passwordError}</p>
+            )}
+            {passwordSuccess && (
+              <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded p-2" data-testid="password-change-success">{passwordSuccess}</p>
+            )}
+            <div>
+              <Label className="text-[#2C1A12] text-sm">Current Password</Label>
+              <Input
+                type="password"
+                value={passwordForm.current}
+                onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
+                required
+                className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]"
+                data-testid="current-password-input"
+              />
+            </div>
+            <div>
+              <Label className="text-[#2C1A12] text-sm">New Password</Label>
+              <Input
+                type="password"
+                value={passwordForm.newPass}
+                onChange={(e) => setPasswordForm({ ...passwordForm, newPass: e.target.value })}
+                required
+                minLength={6}
+                className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]"
+                data-testid="new-password-input"
+              />
+            </div>
+            <div>
+              <Label className="text-[#2C1A12] text-sm">Confirm New Password</Label>
+              <Input
+                type="password"
+                value={passwordForm.confirm}
+                onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                required
+                minLength={6}
+                className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]"
+                data-testid="confirm-password-input"
+              />
+            </div>
+            <div className="flex gap-3 pt-1">
+              <Button type="submit" disabled={passwordLoading} className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white" data-testid="submit-password-change">
+                {passwordLoading ? 'Updating...' : 'Update Password'}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setShowPasswordDialog(false)} className="border-[#E8E3D9] text-[#6B5744]">
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </nav>
   );
 }

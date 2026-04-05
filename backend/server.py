@@ -175,6 +175,10 @@ class UserLoginRequest(BaseModel):
     email: str
     password: str
 
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+
 class ShopCreate(BaseModel):
     name: str
     description: str
@@ -343,6 +347,27 @@ async def logout(request: Request, response: Response):
     response.delete_cookie("refresh_token", path="/")
     response.delete_cookie("session_token", path="/")
     return {"message": "Logged out"}
+
+@api_router.post("/auth/change-password")
+async def change_password(req: PasswordChangeRequest, request: Request):
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    # Fetch full user record with password hash
+    full_user = await db.users.find_one({"user_id": user["user_id"]})
+    if not full_user or not full_user.get("password_hash"):
+        raise HTTPException(status_code=400, detail="Password change not available for this account")
+    
+    if not verify_password(req.current_password, full_user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+    
+    if len(req.new_password) < 6:
+        raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
+    
+    new_hash = hash_password(req.new_password)
+    await db.users.update_one({"user_id": user["user_id"]}, {"$set": {"password_hash": new_hash}})
+    return {"message": "Password updated successfully"}
 
 # ---- SHOP ENDPOINTS ----
 
@@ -859,12 +884,18 @@ async def seed_admin():
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         logger.info(f"Admin user seeded: {admin_email}")
-    elif not verify_password(admin_password, existing["password_hash"]):
+    elif existing.get("password_hash") and not verify_password(admin_password, existing["password_hash"]):
         await db.users.update_one(
             {"email": admin_email},
-            {"$set": {"password_hash": hash_password(admin_password)}}
+            {"$set": {"password_hash": hash_password(admin_password), "role": "admin"}}
         )
         logger.info("Admin password updated")
+    elif not existing.get("password_hash"):
+        await db.users.update_one(
+            {"email": admin_email},
+            {"$set": {"password_hash": hash_password(admin_password), "role": "admin"}}
+        )
+        logger.info("Admin password and role set on existing account")
 
 async def seed_sample_shops():
     count = await db.shops.count_documents({})
