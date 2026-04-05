@@ -52,7 +52,7 @@ export default function LabsPage() {
       {/* Header */}
       <section className="max-w-6xl mx-auto px-4 sm:px-8 pt-10 pb-6">
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
-          <p className="text-[#B55B49] font-medium text-sm tracking-widest uppercase mb-3">Coffee Grounds</p>
+          <p className="text-[#B55B49] font-medium text-sm tracking-widest uppercase mb-3">Coffee Grind</p>
           <h1 className="font-['Cormorant_Garamond'] text-4xl sm:text-5xl font-light text-[#2C1A12] tracking-tight leading-tight mb-2" data-testid="labs-title">
             Labs
           </h1>

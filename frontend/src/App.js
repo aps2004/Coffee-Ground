@@ -46,7 +46,7 @@ function AppRouter() {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8">
             <div>
-              <p className="font-['Cormorant_Garamond'] text-xl text-white/90 mb-2">Coffee Grounds</p>
+              <p className="font-['Cormorant_Garamond'] text-xl text-white/90 mb-2">Coffee Grind</p>
               <p className="text-xs text-white/50 leading-relaxed max-w-xs">
                 Curating the finest coffee experiences across the United Kingdom since 2024.
               </p>
@@ -87,7 +87,7 @@ function AppRouter() {
             </div>
           </div>
           <div className="border-t border-white/10 pt-6 text-center">
-            <p className="text-xs text-white/30">Coffee Grounds &mdash; The Coffee United Kingdom Project</p>
+            <p className="text-xs text-white/30">Coffee Grind &mdash; The Coffee United Kingdom Project</p>
           </div>
         </div>
       </footer>

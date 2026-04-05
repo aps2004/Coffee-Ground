@@ -56,7 +56,7 @@ export default function AuthPage() {
         <div className="text-center mb-8">
           <Coffee className="w-8 h-8 text-[#B55B49] mx-auto mb-3" />
           <h1 className="font-['Cormorant_Garamond'] text-3xl font-light text-[#2C1A12]">
-            {mode === 'login' ? 'Welcome back' : 'Join Coffee Grounds'}
+            {mode === 'login' ? 'Welcome back' : 'Join Coffee Grind'}
           </h1>
           <p className="text-[#6B5744] text-sm mt-1">
             {mode === 'login'
@@ -158,7 +158,7 @@ export default function AuthPage() {
               </div>
               {mode === 'register' && (
                 <p className="text-xs text-[#B55B49]/80 mt-1.5">
-                  Please create a unique password for Coffee Grounds. Do not reuse your email password.
+                  Please create a unique password for Coffee Grind. Do not reuse your email password.
                 </p>
               )}
             </div>

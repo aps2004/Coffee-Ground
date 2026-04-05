@@ -58,7 +58,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section — "Coffee Grounds" prominent + featured shop card */}
+      {/* Hero Section — "Coffee Grind" prominent + featured shop card */}
       <section className="relative bg-[#FDFBF7] overflow-hidden" data-testid="hero-section">
         {/* Subtle decorative shapes */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-[#D4B996]/8 -translate-y-1/2 translate-x-1/4" />
@@ -79,7 +79,7 @@ export default function Home() {
                   data-testid="hero-title"
                 >
                   Coffee<br />
-                  <span className="italic font-normal">Grounds</span>
+                  <span className="italic font-normal">Grind</span>
                 </h1>
                 <p className="text-[#6B5744] text-base sm:text-lg max-w-md mb-5 leading-relaxed">
                   Best Cafes and Coffee in the UK

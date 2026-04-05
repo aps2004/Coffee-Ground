@@ -56,7 +56,7 @@ export default function CUKPPage() {
 
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <h2 className="font-['Cormorant_Garamond'] text-3xl font-light text-[#2C1A12] mb-6">
-                From Notebook to Coffee Grounds
+                From Notebook to Coffee Grind
               </h2>
               <div className="space-y-5 text-[#2C1A12]/80 leading-relaxed">
                 <p>
@@ -69,7 +69,7 @@ export default function CUKPPage() {
                   What began as handwritten tasting notes evolved into something larger. Each shop had a story. Each barista had a philosophy. Each cup was the culmination of a chain stretching from a farmer in Colombia or Ethiopia to the person behind the counter. These weren't just reviews; they were portraits of a movement.
                 </p>
                 <p>
-                  <span className="italic text-[#B55B49] font-medium">Coffee Grounds</span> was born from those notebooks. Named for the rich sediment that remains after the brew, a reminder that the best things leave something behind. What started as a personal project became the UK's most trusted independent coffee guide.
+                  <span className="italic text-[#B55B49] font-medium">Coffee Grind</span> was born from those notebooks. Named for the rich sediment that remains after the brew, a reminder that the best things leave something behind. What started as a personal project became the UK's most trusted independent coffee guide.
                 </p>
               </div>
             </motion.div>
@@ -85,7 +85,7 @@ export default function CUKPPage() {
                   The Coffee United Kingdom Project, or <span className="font-semibold text-[#B55B49]">CUKP</span>, is our ongoing quest to discover, document, and celebrate every exceptional coffee shop across these islands. It's more than a directory; it's a living document of British coffee culture at its finest.
                 </p>
                 <p>
-                  We believe that great coffee shops are more than places to get caffeinated. They're community anchors. They're where freelancers find their rhythm, where strangers become friends, where ideas are born between sips. Every listing on Coffee Grounds has been personally visited, tasted, and written about by our team.
+                  We believe that great coffee shops are more than places to get caffeinated. They're community anchors. They're where freelancers find their rhythm, where strangers become friends, where ideas are born between sips. Every listing on Coffee Grind has been personally visited, tasted, and written about by our team.
                 </p>
                 <p>
                   The quest is far from over. There are shops tucked in market towns we haven't reached, roasteries in industrial estates we haven't found, and baristas whose stories we haven't yet told. That's what keeps us going. That next great cup is always just around the corner.
@@ -180,7 +180,7 @@ export default function CUKPPage() {
               <h3 className="font-['Cormorant_Garamond'] text-2xl text-white mb-2">Eleanor Whitfield</h3>
               <p className="text-[#D4B996] text-sm mb-3">Co-founder & Editor-in-Chief</p>
               <p className="text-white/70 text-sm leading-relaxed">
-                Former food journalist for The Guardian and Eater London. Eleanor's decade-long career covering the UK's dining scene sharpened her palate and her pen. She brings editorial rigour and a novelist's eye for detail to every Coffee Grounds write-up. Her flat white order is non-negotiable: single-origin, medium roast, extra hot.
+                Former food journalist for The Guardian and Eater London. Eleanor's decade-long career covering the UK's dining scene sharpened her palate and her pen. She brings editorial rigour and a novelist's eye for detail to every Coffee Grind write-up. Her flat white order is non-negotiable: single-origin, medium roast, extra hot.
               </p>
             </div>
             <div className="bg-white/5 border border-white/10 rounded p-6">
