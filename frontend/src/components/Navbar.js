@@ -17,11 +17,6 @@ export default function Navbar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleGoogleLogin = () => {
-    const redirectUrl = window.location.origin + '/';
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
-  };
-
   const navLinkClass = (path) =>
     `text-sm font-medium transition-colors ${
       location.pathname === path ? 'text-[#B55B49]' : 'text-[#2C1A12] hover:text-[#B55B49]'
@@ -96,7 +91,7 @@ export default function Navbar() {
                     <p className="text-xs text-[#6B5744]">{user.email}</p>
                   </div>
                   <DropdownMenuSeparator className="bg-[#E8E3D9]" />
-                  {user.role === 'admin' && (
+                  {(user.role === 'admin' || user.role === 'contributor') && (
                     <DropdownMenuItem asChild>
                       <Link to="/admin" className="cursor-pointer" data-testid="nav-admin-link">
                         <Settings className="w-4 h-4 mr-2" /> Dashboard
@@ -109,14 +104,15 @@ export default function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button
-                onClick={handleGoogleLogin}
-                size="sm"
-                className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2"
-                data-testid="nav-google-login-btn"
-              >
-                <User className="w-4 h-4" /> Sign In
-              </Button>
+              <Link to="/auth">
+                <Button
+                  size="sm"
+                  className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2"
+                  data-testid="nav-signin-btn"
+                >
+                  <User className="w-4 h-4" /> Sign In
+                </Button>
+              </Link>
             )}
           </div>
 
@@ -152,9 +148,9 @@ export default function Navbar() {
             {user ? (
               <>
                 <div className="text-sm text-[#6B5744] py-1">Signed in as {user.name || user.email}</div>
-                {user.role === 'admin' && (
+                {(user.role === 'admin' || user.role === 'contributor') && (
                   <Link to="/admin" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-[#6B5744] hover:text-[#2C1A12] py-1">
-                    Admin Dashboard
+                    Dashboard
                   </Link>
                 )}
                 <button onClick={() => { logout(); setMobileOpen(false); }} className="text-sm text-red-600 py-1">
@@ -162,9 +158,9 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <button onClick={handleGoogleLogin} className="text-sm font-medium text-[#B55B49] py-1">
-                Sign In with Google
-              </button>
+              <Link to="/auth" onClick={() => setMobileOpen(false)} className="text-sm font-medium text-[#B55B49] py-1">
+                Sign In
+              </Link>
             )}
           </div>
         )}

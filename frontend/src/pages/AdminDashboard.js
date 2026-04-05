@@ -27,6 +27,7 @@ function ShopForm({ shop, onSave, onCancel }) {
     admin_rating: shop?.admin_rating || 0,
     tags: shop?.tags?.join(', ') || '',
     playlist_url: shop?.playlist_url || '',
+    highlighted: shop?.highlighted || false,
   });
   const [saving, setSaving] = useState(false);
 
@@ -41,6 +42,7 @@ function ShopForm({ shop, onSave, onCancel }) {
         admin_rating: parseFloat(form.admin_rating) || 0,
         tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
         playlist_url: form.playlist_url,
+        highlighted: form.highlighted,
       };
       await onSave(data);
     } catch (err) {
@@ -96,6 +98,17 @@ function ShopForm({ shop, onSave, onCancel }) {
         <Label className="text-[#2C1A12] text-sm">Spotify Playlist URL</Label>
         <Input value={form.playlist_url} onChange={(e) => setForm({ ...form, playlist_url: e.target.value })} placeholder="https://open.spotify.com/embed/playlist/..." className="mt-1 bg-[#FDFBF7] border-[#E8E3D9]" data-testid="shop-playlist-input" />
         <p className="text-xs text-[#6B5744]/60 mt-1">Paste a Spotify embed URL for the shop's recommended playlist</p>
+      </div>
+      <div className="flex items-center gap-3">
+        <label className="flex items-center gap-2 cursor-pointer" data-testid="shop-highlighted-toggle">
+          <input
+            type="checkbox"
+            checked={form.highlighted}
+            onChange={(e) => setForm({ ...form, highlighted: e.target.checked })}
+            className="w-4 h-4 rounded border-[#E8E3D9] text-[#B55B49] focus:ring-[#B55B49]/30"
+          />
+          <span className="text-sm text-[#2C1A12]">Highlight in Spotlight (larger display)</span>
+        </label>
       </div>
       <div className="flex gap-3 pt-2">
         <Button type="submit" disabled={saving} className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white gap-2" data-testid="shop-save-btn">
@@ -251,16 +264,24 @@ export default function AdminDashboard() {
   const [articles, setArticles] = useState([]);
   const [editingArticle, setEditingArticle] = useState(null);
   const [showAddArticle, setShowAddArticle] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [roleFilter, setRoleFilter] = useState('all');
+
+  const isAdmin = user?.role === 'admin';
+  const isContributor = user?.role === 'contributor';
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
-      navigate('/admin/login');
+    if (!user || (user.role !== 'admin' && user.role !== 'contributor')) {
+      navigate('/auth');
       return;
     }
     fetchShops();
-    fetchAdmins();
-    fetchContacts();
-    fetchArticles();
+    if (isAdmin) {
+      fetchAdmins();
+      fetchContacts();
+      fetchArticles();
+      fetchAllUsers();
+    }
   }, [user, navigate]);
 
   const fetchShops = async () => {
@@ -334,6 +355,25 @@ export default function AdminDashboard() {
       await fetchArticles();
     } catch (err) {
       console.error('Cover upload failed:', err);
+    }
+  };
+
+  const fetchAllUsers = async () => {
+    try {
+      const res = await axios.get(`${API}/auth/users`, { withCredentials: true });
+      setAllUsers(res.data);
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    }
+  };
+
+  const handleChangeRole = async (userId, newRole) => {
+    try {
+      await axios.put(`${API}/auth/users/${userId}/role`, { role: newRole }, { withCredentials: true });
+      await fetchAllUsers();
+      await fetchAdmins();
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Failed to update role');
     }
   };
 
@@ -413,9 +453,22 @@ export default function AdminDashboard() {
     }
   };
 
-  if (!user || user.role !== 'admin') return null;
+  if (!user || (user.role !== 'admin' && user.role !== 'contributor')) return null;
 
   const unreadCount = contacts.filter(c => !c.read).length;
+  
+  // Filter shops for contributors: only their own
+  const displayShops = isContributor ? shops.filter(s => s.created_by === user.user_id) : shops;
+
+  // Build tabs based on role
+  const tabs = [];
+  tabs.push({ key: 'shops', label: isContributor ? 'My Shops' : 'Shops', icon: Coffee });
+  if (isAdmin) {
+    tabs.push({ key: 'articles', label: 'Articles', icon: FileText });
+    tabs.push({ key: 'users', label: 'Users', icon: Users });
+    tabs.push({ key: 'admins', label: 'Admins', icon: Users });
+    tabs.push({ key: 'messages', label: 'Messages', icon: Mail, badge: unreadCount });
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFBF7]" data-testid="admin-dashboard">
@@ -423,20 +476,17 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="font-['Cormorant_Garamond'] text-3xl sm:text-4xl font-light text-[#2C1A12] tracking-tight" data-testid="admin-title">
-              Admin Dashboard
+              {isAdmin ? 'Admin Dashboard' : 'Contributor Dashboard'}
             </h1>
-            <p className="text-[#6B5744] text-sm mt-1">Manage shops, team, and messages</p>
+            <p className="text-[#6B5744] text-sm mt-1">
+              {isAdmin ? 'Manage shops, articles, users, and messages' : 'Manage your coffee shop listings'}
+            </p>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-1 mb-8 border-b border-[#E8E3D9]" data-testid="admin-tabs">
-          {[
-            { key: 'shops', label: 'Shops', icon: Coffee },
-            { key: 'articles', label: 'Articles', icon: FileText },
-            { key: 'admins', label: 'Admins', icon: Users },
-            { key: 'messages', label: 'Messages', icon: Mail, badge: unreadCount },
-          ].map(tab => (
+          {tabs.map(tab => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
@@ -481,14 +531,14 @@ export default function AdminDashboard() {
 
             {loading ? (
               <div className="space-y-4">{[1, 2, 3].map(i => <div key={i} className="bg-[#E8E3D9]/40 animate-pulse rounded h-32" />)}</div>
-            ) : shops.length === 0 ? (
+            ) : displayShops.length === 0 ? (
               <div className="text-center py-20">
                 <Coffee className="w-12 h-12 text-[#D4B996] mx-auto mb-4" />
-                <p className="text-[#6B5744]">No coffee shops yet. Add your first listing!</p>
+                <p className="text-[#6B5744]">{isContributor ? 'You haven\'t added any shops yet.' : 'No coffee shops yet. Add your first listing!'}</p>
               </div>
             ) : (
               <div className="space-y-4" data-testid="admin-shop-list">
-                {shops.map(shop => (
+                {displayShops.map(shop => (
                   <div key={shop.shop_id} className="bg-white border border-[#E8E3D9] rounded-lg p-5" data-testid={`admin-shop-${shop.shop_id}`}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -504,6 +554,11 @@ export default function AdminDashboard() {
                           {shop.playlist_url && (
                             <Badge variant="secondary" className="bg-[#B55B49]/10 text-[#B55B49] text-xs">
                               <Music className="w-3 h-3 mr-1" /> Playlist
+                            </Badge>
+                          )}
+                          {shop.highlighted && (
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 text-xs">
+                              <Star className="w-3 h-3 mr-1 fill-yellow-500" /> Spotlight
                             </Badge>
                           )}
                         </div>
@@ -615,6 +670,77 @@ export default function AdminDashboard() {
                           <Trash2 className="w-3 h-3" /> Delete
                         </Button>
                       </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ============ USERS TAB (Admin only) ============ */}
+        {activeTab === 'users' && isAdmin && (
+          <div data-testid="users-section">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <p className="text-[#6B5744] text-sm">{allUsers.length} registered user{allUsers.length !== 1 ? 's' : ''}</p>
+                <div className="flex gap-1">
+                  {['all', 'user', 'contributor', 'admin'].map(r => (
+                    <button
+                      key={r}
+                      onClick={() => setRoleFilter(r)}
+                      className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                        roleFilter === r
+                          ? 'bg-[#B55B49] text-white'
+                          : 'bg-[#E8E3D9]/50 text-[#6B5744] hover:bg-[#E8E3D9]'
+                      }`}
+                      data-testid={`role-filter-${r}`}
+                    >
+                      {r === 'all' ? 'All' : r.charAt(0).toUpperCase() + r.slice(1)}s
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {allUsers.length === 0 ? (
+              <div className="text-center py-16">
+                <Users className="w-12 h-12 text-[#D4B996] mx-auto mb-4" />
+                <p className="text-[#6B5744]">No users registered yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-3" data-testid="users-list">
+                {allUsers
+                  .filter(u => roleFilter === 'all' || u.role === roleFilter)
+                  .map(u => (
+                  <div key={u.user_id} className="bg-white border border-[#E8E3D9] rounded-lg p-4 flex items-center justify-between" data-testid={`user-row-${u.user_id}`}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-[#D4B996]/30 flex items-center justify-center text-[#2C1A12] font-medium text-sm">
+                        {(u.name || u.email || 'U')[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-[#2C1A12]">{u.name || 'Unnamed'}</p>
+                        <p className="text-xs text-[#6B5744]">{u.email}</p>
+                        <p className="text-xs text-[#6B5744]/50">
+                          Joined {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {u.user_id === user.user_id ? (
+                        <Badge variant="secondary" className="bg-[#E8E3D9] text-[#6B5744] text-xs">You (Admin)</Badge>
+                      ) : (
+                        <select
+                          value={u.role}
+                          onChange={(e) => handleChangeRole(u.user_id, e.target.value)}
+                          className="rounded-md border border-[#E8E3D9] bg-[#FDFBF7] px-3 py-1.5 text-xs text-[#2C1A12] focus:outline-none focus:ring-2 focus:ring-[#B55B49]/30"
+                          data-testid={`role-select-${u.user_id}`}
+                        >
+                          <option value="user">User</option>
+                          <option value="contributor">Contributor</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      )}
                     </div>
                   </div>
                 ))}

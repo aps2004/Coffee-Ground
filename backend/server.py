@@ -149,8 +149,29 @@ async def require_admin(request: Request):
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
 
+async def require_contributor_or_admin(request: Request):
+    user = await get_current_user(request)
+    if user.get("role") not in ("admin", "contributor"):
+        raise HTTPException(status_code=403, detail="Contributor or admin access required")
+    return user
+
+async def require_authenticated(request: Request):
+    user = await get_current_user(request)
+    if user.get("role") not in ("user", "contributor", "admin"):
+        raise HTTPException(status_code=403, detail="Authentication required")
+    return user
+
 # Pydantic models
 class AdminLoginRequest(BaseModel):
+    email: str
+    password: str
+
+class UserRegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+
+class UserLoginRequest(BaseModel):
     email: str
     password: str
 
@@ -165,6 +186,7 @@ class ShopCreate(BaseModel):
     admin_rating: float = 0.0
     tags: List[str] = []
     playlist_url: str = ""
+    highlighted: bool = False
 
 class ShopUpdate(BaseModel):
     name: Optional[str] = None
@@ -177,6 +199,7 @@ class ShopUpdate(BaseModel):
     admin_rating: Optional[float] = None
     tags: Optional[List[str]] = None
     playlist_url: Optional[str] = None
+    highlighted: Optional[bool] = None
 
 class RatingCreate(BaseModel):
     rating: float
@@ -199,6 +222,50 @@ async def admin_login(req: AdminLoginRequest, response: Response):
     if not verify_password(req.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     access_token = create_access_token(user["user_id"], email, "admin")
+    refresh_token = create_refresh_token(user["user_id"])
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=3600, path="/")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    user_data = {k: v for k, v in user.items() if k != "password_hash"}
+    return user_data
+
+@api_router.post("/auth/register")
+async def register_user(req: UserRegisterRequest, response: Response):
+    email = req.email.lower().strip()
+    name = req.name.strip()
+    if not email or not req.password or not name:
+        raise HTTPException(status_code=400, detail="Name, email and password are required")
+    if len(req.password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=409, detail="An account with this email already exists")
+    user_id = f"user_{uuid.uuid4().hex[:12]}"
+    hashed = hash_password(req.password)
+    await db.users.insert_one({
+        "user_id": user_id,
+        "email": email,
+        "password_hash": hashed,
+        "name": name,
+        "role": "user",
+        "picture": "",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    access_token = create_access_token(user_id, email, "user")
+    refresh_token = create_refresh_token(user_id)
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=3600, path="/")
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
+    return user
+
+@api_router.post("/auth/login")
+async def login_user(req: UserLoginRequest, response: Response):
+    email = req.email.lower().strip()
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user or not user.get("password_hash"):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    if not verify_password(req.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    access_token = create_access_token(user["user_id"], email, user.get("role", "user"))
     refresh_token = create_refresh_token(user["user_id"])
     response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax", max_age=3600, path="/")
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
@@ -326,7 +393,7 @@ async def get_shop(shop_id: str):
 
 @api_router.post("/shops")
 async def create_shop(request: Request):
-    admin = await require_admin(request)
+    user = await require_contributor_or_admin(request)
     body = await request.json()
     shop_data = ShopCreate(**body)
     
@@ -337,7 +404,7 @@ async def create_shop(request: Request):
         "images": [],
         "avg_user_rating": 0.0,
         "rating_count": 0,
-        "created_by": admin["user_id"],
+        "created_by": user["user_id"],
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
@@ -347,11 +414,20 @@ async def create_shop(request: Request):
 
 @api_router.put("/shops/{shop_id}")
 async def update_shop(shop_id: str, request: Request):
-    await require_admin(request)
+    user = await require_contributor_or_admin(request)
+    shop = await db.shops.find_one({"shop_id": shop_id}, {"_id": 0})
+    if not shop:
+        raise HTTPException(status_code=404, detail="Shop not found")
+    # Contributors can only edit their own shops
+    if user.get("role") == "contributor" and shop.get("created_by") != user["user_id"]:
+        raise HTTPException(status_code=403, detail="You can only edit shops you created")
     body = await request.json()
     update_data = ShopUpdate(**body)
     
     update_fields = {k: v for k, v in update_data.model_dump().items() if v is not None}
+    # Only admins can set highlighted
+    if user.get("role") != "admin" and "highlighted" in update_fields:
+        del update_fields["highlighted"]
     update_fields["updated_at"] = datetime.now(timezone.utc).isoformat()
     
     result = await db.shops.update_one({"shop_id": shop_id}, {"$set": update_fields})
@@ -363,21 +439,26 @@ async def update_shop(shop_id: str, request: Request):
 
 @api_router.delete("/shops/{shop_id}")
 async def delete_shop(shop_id: str, request: Request):
-    await require_admin(request)
-    result = await db.shops.delete_one({"shop_id": shop_id})
-    if result.deleted_count == 0:
+    user = await require_contributor_or_admin(request)
+    shop = await db.shops.find_one({"shop_id": shop_id}, {"_id": 0})
+    if not shop:
         raise HTTPException(status_code=404, detail="Shop not found")
+    if user.get("role") == "contributor" and shop.get("created_by") != user["user_id"]:
+        raise HTTPException(status_code=403, detail="You can only delete shops you created")
+    await db.shops.delete_one({"shop_id": shop_id})
     return {"message": "Shop deleted"}
 
 # ---- IMAGE ENDPOINTS ----
 
 @api_router.post("/shops/{shop_id}/images")
 async def upload_shop_image(shop_id: str, request: Request, file: UploadFile = File(...)):
-    await require_admin(request)
+    user = await require_contributor_or_admin(request)
     
     shop = await db.shops.find_one({"shop_id": shop_id}, {"_id": 0})
     if not shop:
         raise HTTPException(status_code=404, detail="Shop not found")
+    if user.get("role") == "contributor" and shop.get("created_by") != user["user_id"]:
+        raise HTTPException(status_code=403, detail="You can only upload images to your own shops")
     
     ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
     path = f"{APP_NAME}/shops/{shop_id}/{uuid.uuid4()}.{ext}"
@@ -412,7 +493,12 @@ async def serve_file(path: str):
 
 @api_router.delete("/shops/{shop_id}/images/{image_id}")
 async def delete_shop_image(shop_id: str, image_id: str, request: Request):
-    await require_admin(request)
+    user = await require_contributor_or_admin(request)
+    shop = await db.shops.find_one({"shop_id": shop_id}, {"_id": 0})
+    if not shop:
+        raise HTTPException(status_code=404, detail="Shop not found")
+    if user.get("role") == "contributor" and shop.get("created_by") != user["user_id"]:
+        raise HTTPException(status_code=403, detail="You can only delete images from your own shops")
     result = await db.shops.update_one(
         {"shop_id": shop_id},
         {"$pull": {"images": {"image_id": image_id}}}
@@ -580,6 +666,49 @@ async def delete_admin(user_id: str, request: Request):
     
     await db.users.delete_one({"user_id": user_id})
     return {"message": "Admin removed"}
+
+# ---- USER MANAGEMENT ENDPOINTS (Admin only) ----
+
+@api_router.get("/auth/users")
+async def list_users(request: Request, role: str = None):
+    await require_admin(request)
+    query = {}
+    if role:
+        query["role"] = role
+    users = await db.users.find(query, {"_id": 0, "password_hash": 0}).sort("created_at", -1).to_list(500)
+    return users
+
+@api_router.put("/auth/users/{user_id}/role")
+async def update_user_role(user_id: str, request: Request):
+    current_admin = await require_admin(request)
+    body = await request.json()
+    new_role = body.get("role")
+    if new_role not in ("user", "contributor", "admin"):
+        raise HTTPException(status_code=400, detail="Role must be user, contributor, or admin")
+    
+    target = await db.users.find_one({"user_id": user_id})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Prevent self-demotion
+    if current_admin["user_id"] == user_id and new_role != "admin":
+        raise HTTPException(status_code=400, detail="You cannot change your own role")
+    
+    # Ensure at least one admin remains
+    if target.get("role") == "admin" and new_role != "admin":
+        admin_count = await db.users.count_documents({"role": "admin"})
+        if admin_count <= 1:
+            raise HTTPException(status_code=400, detail="Cannot remove the last admin")
+    
+    await db.users.update_one({"user_id": user_id}, {"$set": {"role": new_role}})
+    updated = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
+    return updated
+
+@api_router.get("/auth/contributors")
+async def list_contributors(request: Request):
+    await require_admin(request)
+    contributors = await db.users.find({"role": "contributor"}, {"_id": 0, "password_hash": 0}).sort("created_at", -1).to_list(200)
+    return contributors
 
 # ---- ARTICLE ENDPOINTS ----
 
@@ -989,12 +1118,18 @@ async def startup():
         f.write("- Role: admin\n\n")
         f.write("## Auth Endpoints\n")
         f.write("- POST /api/auth/admin/login (body: {email, password} - email field is used for login name)\n")
+        f.write("- POST /api/auth/register (body: {name, email, password} - creates user role)\n")
+        f.write("- POST /api/auth/login (body: {email, password} - any role)\n")
         f.write("- POST /api/auth/session (Google Auth)\n")
         f.write("- GET /api/auth/me\n")
-        f.write("- POST /api/auth/logout\n\n")
-        f.write("## User Auth\n")
-        f.write("- Users login via Emergent Google Auth\n")
-        f.write("- No test user credentials (Google OAuth)\n")
+        f.write("- POST /api/auth/logout\n")
+        f.write("- GET /api/auth/users (admin only - list all users)\n")
+        f.write("- PUT /api/auth/users/{user_id}/role (admin only - change role)\n\n")
+        f.write("## Roles\n")
+        f.write("- guest: Browse only (no login)\n")
+        f.write("- user: Rate & comment on cafes\n")
+        f.write("- contributor: Create/edit/delete own shops & images\n")
+        f.write("- admin: Full access\n")
 
 # Include the router
 app.include_router(api_router)

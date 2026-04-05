@@ -13,6 +13,7 @@ import CUKPPage from './pages/CUKPPage';
 import ContactPage from './pages/ContactPage';
 import LabsPage from './pages/LabsPage';
 import ArticleDetail from './pages/ArticleDetail';
+import AuthPage from './pages/AuthPage';
 import './App.css';
 
 function AppRouter() {
@@ -35,6 +36,7 @@ function AppRouter() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/labs" element={<LabsPage />} />
           <Route path="/labs/:articleId" element={<ArticleDetail />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>

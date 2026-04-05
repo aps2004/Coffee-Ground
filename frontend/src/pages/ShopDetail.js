@@ -239,7 +239,7 @@ export default function ShopDetail() {
               </h3>
 
               {/* Rate Form */}
-              {user && user.role !== 'admin' ? (
+              {user ? (
                 <div className="bg-white border border-[#E8E3D9] rounded p-6 mb-8" data-testid="rate-form">
                   <p className="text-[#2C1A12] font-medium mb-3">Rate this coffee shop</p>
                   <RatingStars
@@ -264,22 +264,19 @@ export default function ShopDetail() {
                     <Send className="w-4 h-4" /> {submitting ? 'Submitting...' : 'Submit Review'}
                   </Button>
                 </div>
-              ) : !user ? (
+              ) : (
                 <div className="bg-[#E8E3D9]/40 rounded p-6 mb-8 text-center" data-testid="login-to-rate">
-                  <p className="text-[#6B5744] mb-3">Sign in with Google to leave a review</p>
-                  <Button
-                    onClick={() => {
-                      // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-                      const redirectUrl = window.location.origin + '/';
-                      window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
-                    }}
-                    className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white"
-                    data-testid="sign-in-to-rate-btn"
-                  >
-                    Sign in to Review
-                  </Button>
+                  <p className="text-[#6B5744] mb-3">Sign in to leave a review</p>
+                  <Link to="/auth">
+                    <Button
+                      className="bg-[#B55B49] hover:bg-[#9a4d3e] text-white"
+                      data-testid="sign-in-to-rate-btn"
+                    >
+                      Sign in to Review
+                    </Button>
+                  </Link>
                 </div>
-              ) : null}
+              )}
 
               {/* Reviews List */}
               {shop.ratings?.length > 0 ? (

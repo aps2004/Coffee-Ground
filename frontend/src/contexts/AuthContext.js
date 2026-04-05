@@ -4,6 +4,15 @@ import axios from 'axios';
 const AuthContext = createContext(null);
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+function formatApiError(detail) {
+  if (detail == null) return "Something went wrong. Please try again.";
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail))
+    return detail.map((e) => (e && typeof e.msg === "string" ? e.msg : JSON.stringify(e))).filter(Boolean).join(" ");
+  if (detail && typeof detail.msg === "string") return detail.msg;
+  return String(detail);
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,6 +45,26 @@ export function AuthProvider({ children }) {
     return res.data;
   };
 
+  const loginUser = async (email, password) => {
+    try {
+      const res = await axios.post(`${API}/auth/login`, { email, password }, { withCredentials: true });
+      setUser(res.data);
+      return { success: true, data: res.data };
+    } catch (e) {
+      return { success: false, error: formatApiError(e.response?.data?.detail) || e.message };
+    }
+  };
+
+  const registerUser = async (name, email, password) => {
+    try {
+      const res = await axios.post(`${API}/auth/register`, { name, email, password }, { withCredentials: true });
+      setUser(res.data);
+      return { success: true, data: res.data };
+    } catch (e) {
+      return { success: false, error: formatApiError(e.response?.data?.detail) || e.message };
+    }
+  };
+
   const logout = async () => {
     try {
       await axios.post(`${API}/auth/logout`, {}, { withCredentials: true });
@@ -48,7 +77,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginAdmin, logout, refreshUser, setUser }}>
+    <AuthContext.Provider value={{ user, loading, loginAdmin, loginUser, registerUser, logout, refreshUser, setUser }}>
       {children}
     </AuthContext.Provider>
   );
