@@ -399,14 +399,17 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleImageUpload = async (shopId, file) => {
-    const formData = new FormData();
-    formData.append('file', file);
+  const handleImageUpload = async (shopId, files) => {
+    const fileList = Array.from(files).slice(0, 10);
     try {
-      await axios.post(`${API}/shops/${shopId}/images`, formData, {
-        withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      for (const file of fileList) {
+        const formData = new FormData();
+        formData.append('file', file);
+        await axios.post(`${API}/shops/${shopId}/images`, formData, {
+          withCredentials: true,
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
       await fetchShops();
     } catch (err) {
       console.error('Upload failed:', err);
@@ -572,9 +575,10 @@ export default function AdminDashboard() {
                               </button>
                             </div>
                           ))}
-                          <label className="w-16 h-16 rounded border-2 border-dashed border-[#E8E3D9] flex items-center justify-center cursor-pointer hover:border-[#B55B49] transition-colors" data-testid={`upload-image-${shop.shop_id}`}>
-                            <Upload className="w-5 h-5 text-[#6B5744]" />
-                            <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files[0]) handleImageUpload(shop.shop_id, e.target.files[0]); }} />
+                          <label className="w-16 h-16 rounded border-2 border-dashed border-[#E8E3D9] flex flex-col items-center justify-center cursor-pointer hover:border-[#B55B49] transition-colors" data-testid={`upload-image-${shop.shop_id}`}>
+                            <Upload className="w-4 h-4 text-[#6B5744]" />
+                            <span className="text-[9px] text-[#6B5744] mt-0.5">Up to 10</span>
+                            <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { if (e.target.files.length) handleImageUpload(shop.shop_id, e.target.files); }} />
                           </label>
                         </div>
                       </div>

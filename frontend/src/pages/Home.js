@@ -47,9 +47,18 @@ export default function Home() {
   );
 
   const featured = shops.length > 0 ? shops[0] : null;
-  const featuredImages = featured?.images?.length > 0
-    ? featured.images.slice(0, 3).map(img => `${API}/files/${img.storage_path}`)
-    : PLACEHOLDER_IMAGES;
+  // Build exactly 5 unique images: shop images first, then fill from placeholders (no repeats)
+  const buildUniqueImages = () => {
+    const shopImgs = (featured?.images || []).map(img => `${API}/files/${img.storage_path}`);
+    const used = new Set(shopImgs);
+    const result = [...shopImgs];
+    for (const p of PLACEHOLDER_IMAGES) {
+      if (result.length >= 5) break;
+      if (!used.has(p)) { result.push(p); used.add(p); }
+    }
+    return result.slice(0, 5);
+  };
+  const featuredImages = featured ? buildUniqueImages() : PLACEHOLDER_IMAGES;
   const featuredRating = featured
     ? (featured.rating_count > 0 && featured.admin_rating > 0
         ? ((featured.admin_rating + featured.avg_user_rating) / 2).toFixed(1)
@@ -135,16 +144,16 @@ export default function Home() {
                       <img src={featuredImages[0]} alt={featured.name} className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
                     </div>
                     <div className="col-span-3 row-span-1 overflow-hidden">
-                      <img src={featuredImages[1] || featuredImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
+                      <img src={featuredImages[1]} alt="" className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
                     </div>
                     <div className="col-span-3 row-span-1 overflow-hidden">
-                      <img src={featuredImages[2] || featuredImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
+                      <img src={featuredImages[2]} alt="" className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
                     </div>
                     <div className="col-span-3 row-span-1 overflow-hidden">
-                      <img src={featuredImages[3] || featuredImages[1] || featuredImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
+                      <img src={featuredImages[3]} alt="" className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
                     </div>
                     <div className="col-span-3 row-span-1 overflow-hidden">
-                      <img src={featuredImages[4] || featuredImages[2] || featuredImages[0]} alt="" className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
+                      <img src={featuredImages[4]} alt="" className="w-full h-full object-cover transition-transform duration-[4000ms] ease-out hover:scale-110" />
                     </div>
                   </div>
                   {/* Footer strip — blurb with "....more" hyperlink */}
